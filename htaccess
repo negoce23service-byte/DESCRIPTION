@@ -1,0 +1,12 @@
+# Turn off MultiViews to prevent conflicts with content negotiation
+Options -MultiViews
+
+# Use mod_rewrite to handle SPA routing
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Redirect all requests for non-existent files or directories to index.html
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>

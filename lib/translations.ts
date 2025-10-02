@@ -41,10 +41,6 @@ export const translations = {
     ar: 'اختر ملفًا...',
     fr: 'Choisir un fichier...',
   },
-  eventDateLabel: {
-    ar: 'تاريخ الفعالية',
-    fr: "Date de l'événement",
-  },
   categoryLabel: {
     ar: 'الفئة',
     fr: 'Catégorie',
@@ -164,10 +160,6 @@ export const translations = {
   phone: {
     ar: 'الهاتف',
     fr: 'Téléphone',
-  },
-  eventDate: {
-    ar: 'تاريخ الفعالية',
-    fr: "Date de l'événement",
   },
   category: {
     ar: 'الفئة',

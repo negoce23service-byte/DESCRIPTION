@@ -2,7 +2,6 @@ export interface FormData {
   fullName: string;
   email: string;
   phone: string;
-  eventDate: string;
   category: 'participant' | 'exhibitor' | 'speaker' | 'television';
   attachments: File[];
 }

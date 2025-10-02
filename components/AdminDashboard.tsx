@@ -71,7 +71,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const { t, language } = useLanguage();
   
-  type SortableKeys = 'submissionDate' | 'fullName' | 'email' | 'eventDate' | 'category' | 'status';
+  type SortableKeys = 'submissionDate' | 'fullName' | 'email' | 'category' | 'status';
   type SortDirection = 'ascending' | 'descending';
 
   const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: SortDirection } | null>({ key: 'submissionDate', direction: 'descending' });
@@ -138,7 +138,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         if (valA == null) return 1;
         if (valB == null) return -1;
         
-        if (key === 'eventDate' || key === 'submissionDate') {
+        if (key === 'submissionDate') {
           return (new Date(valA).getTime() - new Date(valB).getTime()) * direction;
         }
 
@@ -177,7 +177,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         [t('fullName')]: reg.fullName,
         [t('email')]: reg.email,
         [t('phone')]: reg.phone || '-',
-        [t('eventDate')]: reg.eventDate,
         [t('category')]: getCategoryTranslation(reg.category),
         [t('status')]: getStatusTranslation(reg.status),
         [t('attachmentsColumn')]: reg.attachmentNames?.join(', ') || ''
@@ -217,7 +216,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
           if (R % 2 === 0) { // Apply zebra stripe to even data rows (R=2, 4, etc.)
             cell.s.fill = zebraStripeStyle.fill;
           }
-          if (C === 0 || C === 6 || C === 7) { // Center align #, Category, Status
+          if (C === 0 || C === 5 || C === 6) { // Center align #, Category, Status
             if (!cell.s.alignment) cell.s.alignment = {};
             cell.s.alignment.horizontal = "center";
           }
@@ -232,7 +231,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         { wch: 25 }, // Full Name
         { wch: 30 }, // Email
         { wch: 15 }, // Phone
-        { wch: 15 }, // Event Date
         { wch: 20 }, // Category
         { wch: 15 }, // Status
         { wch: 40 }, // Attachments
@@ -292,7 +290,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                 {renderSortableHeader('fullName', t('fullName'))}
                 {renderSortableHeader('email', t('email'))}
                 <th className="whitespace-nowrap px-4 py-3 text-start font-medium text-stone-900">{t('phone')}</th>
-                {renderSortableHeader('eventDate', t('eventDate'))}
                 {renderSortableHeader('category', t('category'))}
                 {renderSortableHeader('status', t('status'))}
                 <th className="whitespace-nowrap px-4 py-3 text-start font-medium text-stone-900">{t('actions')}</th>
@@ -306,7 +303,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                   <td className="whitespace-nowrap px-4 py-3 font-medium text-stone-900">{reg.fullName}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-stone-700">{reg.email}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-stone-700">{reg.phone || '-'}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-stone-700">{reg.eventDate}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-stone-700">
                     <span className={`inline-flex items-center justify-center rounded-full px-2.5 py-0.5 ${getCategoryBadgeClasses(reg.category)}`}>
                       <p className="whitespace-nowrap text-sm">{getCategoryTranslation(reg.category)}</p>

@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { FormData, SubmissionStatus, Registration } from './types';
 import Header from './components/Header';
@@ -9,6 +10,7 @@ import AdminDashboard from './components/AdminDashboard';
 import AdminLogin from './components/AdminLogin';
 import { useLanguage } from './context/LanguageContext';
 import FileUpload from './components/FileUpload';
+import CategorySelector from './components/CategorySelector';
 
 const UserIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,17 +30,43 @@ const PhoneIcon = () => (
     </svg>
 );
 
-const TicketIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+// FIX: Update icon components to accept a className prop to allow dynamic styling.
+const NewspaperIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className ?? "h-full w-full text-stone-500 group-hover:text-amber-700"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
     </svg>
 );
+
+// FIX: Update icon components to accept a className prop to allow dynamic styling.
+const DesktopIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className ?? "h-full w-full text-stone-500 group-hover:text-amber-700"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" />
+    </svg>
+);
+
+// FIX: Update icon components to accept a className prop to allow dynamic styling.
+const MicrophoneIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className ?? "h-full w-full text-stone-500 group-hover:text-amber-700"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a3.375 3.375 0 0 0 3.375-3.375V5.25a3.375 3.375 0 0 0-6.75 0v10.125A3.375 3.375 0 0 0 12 18.75Z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 12v.75A4.5 4.5 0 0 0 12 17.25a4.5 4.5 0 0 0 4.5-4.5V12" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75v2.25" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 21h7.5" />
+    </svg>
+);
+
+
+// FIX: Update icon components to accept a className prop to allow dynamic styling.
+const TvIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className ?? "h-full w-full text-stone-500 group-hover:text-amber-700"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 20.25h12m-7.5-3.75v3.75m-3.75-3.75v3.75m0-3.75h3.75m9-6.75v6.75c0 .621-.504 1.125-1.125 1.125H5.625c-.621 0-1.125-.504-1.125-1.125V9.75c0-.621.504-1.125 1.125-1.125h12.75c.621 0 1.125.504 1.125 1.125z" />
+    </svg>
+);
+
 
 const getInitialFormData = (): FormData => ({
   fullName: '',
   email: '',
   phone: '',
-  eventDate: new Date().toISOString().split('T')[0],
   category: 'participant',
   attachments: [],
 });
@@ -89,6 +117,10 @@ const App: React.FC = () => {
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  }, []);
+
+  const handleCategoryChange = useCallback((value: FormData['category']) => {
+    setFormData(prev => ({ ...prev, category: value }));
   }, []);
 
   const handleFilesChange = useCallback((newFiles: File[]) => {
@@ -241,6 +273,13 @@ const App: React.FC = () => {
     );
   }
 
+  const categoryOptions = [
+    { value: 'participant' as const, label: t('categoryParticipant'), icon: <NewspaperIcon /> },
+    { value: 'exhibitor' as const, label: t('categoryExhibitor'), icon: <DesktopIcon /> },
+    { value: 'speaker' as const, label: t('categorySpeaker'), icon: <MicrophoneIcon /> },
+    { value: 'television' as const, label: t('categoryTelevision'), icon: <TvIcon /> },
+  ];
+
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 selection:bg-amber-100">
       <div className="max-w-lg w-full bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
@@ -284,33 +323,13 @@ const App: React.FC = () => {
                     required
                     icon={<PhoneIcon />}
                   />
-                   <FormField
-                    id="eventDate"
-                    name="eventDate"
-                    label={t('eventDateLabel')}
-                    type="date"
-                    placeholder=""
-                    value={formData.eventDate}
-                    onChange={handleChange}
-                    required
-                    icon={<CalendarIcon />}
-                  />
-                  <FormField
-                    id="category"
-                    name="category"
+                  <CategorySelector
                     label={t('categoryLabel')}
-                    type="select"
-                    placeholder=""
-                    value={formData.category}
-                    onChange={handleChange}
+                    options={categoryOptions}
+                    selectedValue={formData.category}
+                    onChange={handleCategoryChange}
                     required
-                    icon={<TicketIcon />}
-                  >
-                      <option value="participant">{t('categoryParticipant')}</option>
-                      <option value="exhibitor">{t('categoryExhibitor')}</option>
-                      <option value="speaker">{t('categorySpeaker')}</option>
-                      <option value="television">{t('categoryTelevision')}</option>
-                  </FormField>
+                  />
                   <FileUpload
                     id="attachments"
                     name="attachments"
@@ -353,11 +372,5 @@ const App: React.FC = () => {
     </div>
   );
 };
-const CalendarIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-stone-400" viewBox="0 0 20 20" fill="currentColor">
-      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-    </svg>
-);
-
 
 export default App;

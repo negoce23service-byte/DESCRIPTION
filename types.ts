@@ -1,0 +1,19 @@
+export interface FormData {
+  fullName: string;
+  email: string;
+  phone: string;
+  eventDate: string;
+  category: 'participant' | 'exhibitor' | 'speaker' | 'television';
+  attachments: File[];
+}
+
+export type RegistrationStatus = 'pending' | 'confirmed' | 'rejected';
+
+export interface Registration extends Omit<FormData, 'attachments'> {
+  id: string;
+  status: RegistrationStatus;
+  attachmentNames?: string[];
+}
+
+
+export type SubmissionStatus = 'idle' | 'loading' | 'success' | 'error';

@@ -187,6 +187,45 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
 
+    // --- STYLING ---
+    const headerStyle = {
+      font: { bold: true, color: { rgb: "FFFFFF" } },
+      fill: { fgColor: { rgb: "b45309" } }, // Amber 700
+      alignment: { horizontal: "center", vertical: "center" },
+    };
+    const zebraStripeStyle = { fill: { fgColor: { rgb: "f5f5f4" } } }; // Stone 100
+    const border = {
+      top: { style: "thin", color: { auto: 1 } },
+      bottom: { style: "thin", color: { auto: 1 } },
+      left: { style: "thin", color: { auto: 1 } },
+      right: { style: "thin", color: { auto: 1 } },
+    };
+
+    const range = XLSX.utils.decode_range(worksheet['!ref']);
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellAddress = XLSX.utils.encode_cell({ c: C, r: R });
+        let cell = worksheet[cellAddress];
+        if (!cell) continue;
+        
+        if (!cell.s) cell.s = {};
+        cell.s.border = border;
+
+        if (R === 0) { // Header row
+          cell.s = { ...cell.s, ...headerStyle };
+        } else { // Data rows
+          if (R % 2 === 0) { // Apply zebra stripe to even data rows (R=2, 4, etc.)
+            cell.s.fill = zebraStripeStyle.fill;
+          }
+          if (C === 0 || C === 6 || C === 7) { // Center align #, Category, Status
+            if (!cell.s.alignment) cell.s.alignment = {};
+            cell.s.alignment.horizontal = "center";
+          }
+        }
+      }
+    }
+    // --- END STYLING ---
+
     const columnWidths = [
         { wch: 5 }, // #
         { wch: 20 }, // Submission Date
@@ -199,6 +238,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         { wch: 40 }, // Attachments
     ];
     worksheet['!cols'] = columnWidths;
+
+    // Add auto-filter to header
+    worksheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(range.e.c)}1`};
 
     XLSX.writeFile(workbook, "registrations.xlsx");
 };
@@ -243,7 +285,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
       ) : (
         <div className="overflow-x-auto rounded-lg border border-stone-200 shadow-sm">
           <table className="min-w-full divide-y divide-stone-200 bg-white text-sm">
-            <thead className="bg-stone-50">
+            <thead className="bg-stone-100">
               <tr>
                 <th className="whitespace-nowrap px-4 py-3 text-start font-medium text-stone-900">{t('registrationNumber')}</th>
                 {renderSortableHeader('submissionDate', t('submissionDate'))}
@@ -258,7 +300,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             </thead>
             <tbody className="divide-y divide-stone-200">
               {sortedRegistrations.map((reg, index) => (
-                <tr key={reg.id} className="hover:bg-stone-50">
+                <tr key={reg.id} className={`transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-stone-50'} hover:bg-amber-100`}>
                   <td className="whitespace-nowrap px-4 py-3 font-medium text-stone-600">{index + 1}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-stone-700">{new Date(reg.submissionDate).toLocaleString(language)}</td>
                   <td className="whitespace-nowrap px-4 py-3 font-medium text-stone-900">{reg.fullName}</td>

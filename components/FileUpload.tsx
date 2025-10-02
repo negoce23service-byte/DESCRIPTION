@@ -104,11 +104,11 @@ const FileUpload: React.FC<FileUploadProps> = ({ id, name, label, onFilesSelecte
             {selectedFiles.length > 0 && (
                 <div className="mt-4">
                     <h4 className="text-sm font-medium text-stone-700 mb-2">{translations.fileListTitle}</h4>
-                    <ul className="space-y-3">
-                        {selectedFiles.map(file => {
+                    <ul className="space-y-2">
+                        {selectedFiles.map((file, index) => {
                             const progress = uploadProgress[file.name] || 0;
                             return (
-                                <li key={file.name} className="flex items-start space-x-3 rtl:space-x-reverse bg-stone-50 p-3 rounded-md border border-stone-200">
+                                <li key={file.name} className={`flex items-start space-x-3 rtl:space-x-reverse p-3 rounded-md border border-stone-200 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-stone-50'} hover:bg-amber-50`}>
                                     <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-stone-200 rounded-md">
                                         {previews[file.name] ? (
                                             <img src={previews[file.name]} alt={file.name} className="h-full w-full object-cover rounded-md" />

@@ -12,6 +12,7 @@ export type RegistrationStatus = 'pending' | 'confirmed' | 'rejected';
 export interface Registration extends Omit<FormData, 'attachments'> {
   id: string;
   status: RegistrationStatus;
+  submissionDate: string;
   attachmentNames?: string[];
 }
 

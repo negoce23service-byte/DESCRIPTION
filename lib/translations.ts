@@ -173,6 +173,10 @@ export const translations = {
     ar: 'الفئة',
     fr: 'Catégorie',
   },
+  attachmentsColumn: {
+    ar: 'المرفقات',
+    fr: 'Pièces jointes',
+  },
   // Admin Login
   adminLoginTitle: {
     ar: 'الوصول إلى لوحة التحكم',
@@ -234,5 +238,18 @@ export const translations = {
   emailSimulationReject: {
     ar: 'سيتم إرسال بريد إلكتروني بالرفض إلى',
     fr: 'Un e-mail de rejet serait envoyé à',
+  },
+  registrationNumber: {
+    ar: '#',
+    fr: '#',
+  },
+  submissionDate: {
+    ar: 'تاريخ التسجيل',
+    fr: 'Date de soumission',
+  },
+  // Excel Export
+  downloadExcel: {
+    ar: 'تحميل كملف Excel',
+    fr: 'Télécharger en Excel',
   },
 };

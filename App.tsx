@@ -166,6 +166,7 @@ const App: React.FC = () => {
           const newRegistration: Registration = {
               id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
               status: 'pending',
+              submissionDate: new Date().toISOString(),
               ...rest,
               attachmentNames: attachments.map(f => f.name),
           };

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Registration, RegistrationStatus } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 
+declare var XLSX: any;
+
 interface AdminDashboardProps {
   setView: (view: 'form') => void;
 }
@@ -58,15 +60,21 @@ const SortablePlaceholderIcon = () => (
     </svg>
 );
 
+const DownloadIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 rtl:ml-2 ltr:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+    </svg>
+);
+
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
-  type SortableKeys = 'fullName' | 'email' | 'eventDate' | 'category' | 'status';
+  type SortableKeys = 'submissionDate' | 'fullName' | 'email' | 'eventDate' | 'category' | 'status';
   type SortDirection = 'ascending' | 'descending';
 
-  const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: SortDirection } | null>({ key: 'eventDate', direction: 'descending' });
+  const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: SortDirection } | null>({ key: 'submissionDate', direction: 'descending' });
 
   useEffect(() => {
     try {
@@ -130,7 +138,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         if (valA == null) return 1;
         if (valB == null) return -1;
         
-        if (key === 'eventDate') {
+        if (key === 'eventDate' || key === 'submissionDate') {
           return (new Date(valA).getTime() - new Date(valB).getTime()) * direction;
         }
 
@@ -160,6 +168,42 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     setSortConfig({ key, direction });
   };
   
+  const handleDownloadExcel = () => {
+    if (registrations.length === 0) return;
+
+    const dataForExcel = sortedRegistrations.map((reg, index) => ({
+        [t('registrationNumber')]: index + 1,
+        [t('submissionDate')]: new Date(reg.submissionDate).toLocaleString(language),
+        [t('fullName')]: reg.fullName,
+        [t('email')]: reg.email,
+        [t('phone')]: reg.phone || '-',
+        [t('eventDate')]: reg.eventDate,
+        [t('category')]: getCategoryTranslation(reg.category),
+        [t('status')]: getStatusTranslation(reg.status),
+        [t('attachmentsColumn')]: reg.attachmentNames?.join(', ') || ''
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataForExcel);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+
+    const columnWidths = [
+        { wch: 5 }, // #
+        { wch: 20 }, // Submission Date
+        { wch: 25 }, // Full Name
+        { wch: 30 }, // Email
+        { wch: 15 }, // Phone
+        { wch: 15 }, // Event Date
+        { wch: 20 }, // Category
+        { wch: 15 }, // Status
+        { wch: 40 }, // Attachments
+    ];
+    worksheet['!cols'] = columnWidths;
+
+    XLSX.writeFile(workbook, "registrations.xlsx");
+};
+
+
   const renderSortableHeader = (key: SortableKeys, title: string) => (
     <th className="whitespace-nowrap px-4 py-3 text-start font-medium text-stone-900">
         <button type="button" onClick={() => requestSort(key)} className="flex items-center group" aria-label={`Sort by ${title}`}>
@@ -174,14 +218,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
 
   return (
     <>
-      <div className="flex justify-between items-center my-6">
+      <div className="flex justify-between items-center my-6 flex-wrap gap-4">
         <h1 className="text-2xl font-bold text-stone-800">{t('adminDashboardTitle')}</h1>
-        <button
-          onClick={() => setView('form')}
-          className="inline-flex items-center rounded-md border border-transparent bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
-        >
-          {t('adminBackToForm')}
-        </button>
+        <div className="flex items-center space-x-2 rtl:space-x-reverse">
+             <button
+                onClick={handleDownloadExcel}
+                disabled={registrations.length === 0}
+                className="inline-flex items-center justify-center rounded-md border border-emerald-600 bg-white px-4 py-2 text-sm font-medium text-emerald-700 shadow-sm hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+                <DownloadIcon />
+                {t('downloadExcel')}
+            </button>
+            <button
+              onClick={() => setView('form')}
+              className="inline-flex items-center rounded-md border border-transparent bg-amber-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+            >
+              {t('adminBackToForm')}
+            </button>
+        </div>
       </div>
 
       {registrations.length === 0 ? (
@@ -191,6 +245,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
           <table className="min-w-full divide-y divide-stone-200 bg-white text-sm">
             <thead className="bg-stone-50">
               <tr>
+                <th className="whitespace-nowrap px-4 py-3 text-start font-medium text-stone-900">{t('registrationNumber')}</th>
+                {renderSortableHeader('submissionDate', t('submissionDate'))}
                 {renderSortableHeader('fullName', t('fullName'))}
                 {renderSortableHeader('email', t('email'))}
                 <th className="whitespace-nowrap px-4 py-3 text-start font-medium text-stone-900">{t('phone')}</th>
@@ -201,8 +257,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-200">
-              {sortedRegistrations.map((reg) => (
+              {sortedRegistrations.map((reg, index) => (
                 <tr key={reg.id} className="hover:bg-stone-50">
+                  <td className="whitespace-nowrap px-4 py-3 font-medium text-stone-600">{index + 1}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-stone-700">{new Date(reg.submissionDate).toLocaleString(language)}</td>
                   <td className="whitespace-nowrap px-4 py-3 font-medium text-stone-900">{reg.fullName}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-stone-700">{reg.email}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-stone-700">{reg.phone || '-'}</td>

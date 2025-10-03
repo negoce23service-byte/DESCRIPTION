@@ -1,6 +1,7 @@
 export interface FormData {
   fullName: string;
   email: string;
+  nationalId: string;
   phone: string;
   category: 'participant' | 'exhibitor' | 'speaker' | 'television';
   attachments: File[];

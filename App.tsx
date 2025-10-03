@@ -25,6 +25,13 @@ const MailIcon = () => (
     </svg>
 );
 
+const IdCardIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h2a2 2 0 012 2v1m-5 5a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 17l-1.07-1.071a5.5 5.5 0 00-7.858 0L7 17" />
+    </svg>
+);
+
 const PhoneIcon = () => (
      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
@@ -67,6 +74,7 @@ const TvIcon = ({ className }: { className?: string }) => (
 const getInitialFormData = (): FormData => ({
   fullName: '',
   email: '',
+  nationalId: '',
   phone: '',
   category: 'participant',
   attachments: [],
@@ -154,8 +162,8 @@ const App: React.FC = () => {
   const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const { fullName, email, phone, attachments } = formData;
-    if (!fullName || !email || !phone || attachments.length === 0) {
+    const { fullName, email, phone, nationalId, attachments } = formData;
+    if (!fullName || !email || !phone || !nationalId || attachments.length === 0) {
       setFormError(t('validationErrorAllFields'));
       return;
     }
@@ -312,6 +320,17 @@ const App: React.FC = () => {
                     onChange={handleChange}
                     required
                     icon={<MailIcon />}
+                  />
+                   <FormField
+                    id="nationalId"
+                    name="nationalId"
+                    label={t('nationalIdLabel')}
+                    type="text"
+                    placeholder={t('nationalIdPlaceholder')}
+                    value={formData.nationalId}
+                    onChange={handleChange}
+                    required
+                    icon={<IdCardIcon />}
                   />
                   <FormField
                     id="phone"

@@ -25,6 +25,14 @@ export const translations = {
     ar: 'you@example.com',
     fr: 'vous@exemple.com',
   },
+  nationalIdLabel: {
+    ar: 'رقم البطاقة الوطنية',
+    fr: 'Numéro de CIN',
+  },
+  nationalIdPlaceholder: {
+    ar: 'مثال: AB123456',
+    fr: 'Ex: AB123456',
+  },
   phoneLabel: {
     ar: 'رقم الهاتف',
     fr: 'Numéro de téléphone',
@@ -156,6 +164,10 @@ export const translations = {
   email: {
     ar: 'البريد الإلكتروني',
     fr: 'E-mail',
+  },
+  nationalId: {
+    ar: 'رقم البطاقة الوطنية',
+    fr: 'N° CIN',
   },
   phone: {
     ar: 'الهاتف',

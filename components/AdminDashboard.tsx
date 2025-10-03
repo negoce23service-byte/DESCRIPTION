@@ -71,7 +71,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const { t, language } = useLanguage();
   
-  type SortableKeys = 'submissionDate' | 'fullName' | 'email' | 'category' | 'status';
+  type SortableKeys = 'submissionDate' | 'fullName' | 'email' | 'nationalId' | 'category' | 'status';
   type SortDirection = 'ascending' | 'descending';
 
   const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: SortDirection } | null>({ key: 'submissionDate', direction: 'descending' });
@@ -176,6 +176,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         [t('submissionDate')]: new Date(reg.submissionDate).toLocaleString(language),
         [t('fullName')]: reg.fullName,
         [t('email')]: reg.email,
+        [t('nationalId')]: reg.nationalId || '-',
         [t('phone')]: reg.phone || '-',
         [t('category')]: getCategoryTranslation(reg.category),
         [t('status')]: getStatusTranslation(reg.status),
@@ -216,7 +217,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
           if (R % 2 === 0) { // Apply zebra stripe to even data rows (R=2, 4, etc.)
             cell.s.fill = zebraStripeStyle.fill;
           }
-          if (C === 0 || C === 5 || C === 6) { // Center align #, Category, Status
+          if (C === 0 || C === 6 || C === 7) { // Center align #, Category, Status
             if (!cell.s.alignment) cell.s.alignment = {};
             cell.s.alignment.horizontal = "center";
           }
@@ -230,6 +231,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         { wch: 20 }, // Submission Date
         { wch: 25 }, // Full Name
         { wch: 30 }, // Email
+        { wch: 15 }, // National ID
         { wch: 15 }, // Phone
         { wch: 20 }, // Category
         { wch: 15 }, // Status
@@ -289,6 +291,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                 {renderSortableHeader('submissionDate', t('submissionDate'))}
                 {renderSortableHeader('fullName', t('fullName'))}
                 {renderSortableHeader('email', t('email'))}
+                {renderSortableHeader('nationalId', t('nationalId'))}
                 <th className="whitespace-nowrap px-4 py-3 text-start font-medium text-stone-900">{t('phone')}</th>
                 {renderSortableHeader('category', t('category'))}
                 {renderSortableHeader('status', t('status'))}
@@ -302,6 +305,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                   <td className="whitespace-nowrap px-4 py-3 text-stone-700">{new Date(reg.submissionDate).toLocaleString(language)}</td>
                   <td className="whitespace-nowrap px-4 py-3 font-medium text-stone-900">{reg.fullName}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-stone-700">{reg.email}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-stone-700">{reg.nationalId || '-'}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-stone-700">{reg.phone || '-'}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-stone-700">
                     <span className={`inline-flex items-center justify-center rounded-full px-2.5 py-0.5 ${getCategoryBadgeClasses(reg.category)}`}>

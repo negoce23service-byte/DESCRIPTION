@@ -2,9 +2,9 @@ import React from 'react';
 
 const Logo = () => (
     <img 
-        src="https://www.agriculture.gov.ma/sites/default/files/2025-02/logo%20prix%20presse.png" 
+        src="https://lh7-rt.googleusercontent.com/formsz/AN7BsVBgGY96VoqDofEF9zWn8EQzHy6avjlLuAzwRmyd_APVSz8ZsVcpXUmfeFzqLKE12JJHrE5t19hAPJO6-Ad4aToiwoosw0I4p72RYuv2yiP1RTwekPMmxWZtAK68YoHJkShZ-bik-knCmtp8iLZbaGR_Nql8rZGZUIL8KKYDGzHkQkS0HX_X6pF8K_uCuhyJPDJtc9xkS8rKiyKF=w668?key=ioklNWInx-a3uP8_izc67g" 
         alt="Grand prix de la presse Agricole et Rurale Logo" 
-        className="w-72 mx-auto"
+        
     />
 );
 

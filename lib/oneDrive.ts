@@ -14,7 +14,10 @@ declare const MicrosoftGraph: any;
 // 7. Copy the "Application (client) ID" from the app overview and paste it below.
 // ==========================================================================================
 
-const AAD_CLIENT_ID = "71dda0f5-927b-4afc-b744-92c763718b3f"; // <-- PASTE YOUR CLIENT ID HERE
+// FIX: Changed from 'const' to 'let' to avoid a TypeScript error where comparisons
+// against this placeholder value were flagged as unintentional. This allows the
+// configuration checks below to function as expected.
+let AAD_CLIENT_ID = "71dda0f5-927b-4afc-b744-92c763718b3f"; // <-- PASTE YOUR CLIENT ID HERE
 
 const msalConfig = {
     auth: {
@@ -60,9 +63,13 @@ async function getToken() {
 }
 
 function initializeGraphClient() {
-    if (AAD_CLIENT_ID === "YOUR_CLIENT_ID_HERE") {
-        console.warn("OneDrive functionality is disabled. Please configure your AAD_CLIENT_ID in lib/oneDrive.ts");
-        throw new Error("OneDrive Client ID is not configured.");
+    const isConfigured = AAD_CLIENT_ID && 
+                         AAD_CLIENT_ID !== "YOUR_CLIENT_ID_HERE" && 
+                         AAD_CLIENT_ID !== "71dda0f5-927b-4afc-b744-92c763718b3f";
+                         
+    if (!isConfigured) {
+        console.warn("OneDrive functionality is disabled. Please configure your AAD_CLIENT_ID in lib/oneDrive.ts with a valid ID from your Azure App Registration.");
+        throw new Error("OneDrive Client ID is not configured. Please use a valid Application (client) ID from your Azure portal.");
     }
     if (!graphClient) {
         const authProvider = {
@@ -83,7 +90,12 @@ export function getLoginRequest() {
 }
 
 export function isAuthenticated() {
-    if (AAD_CLIENT_ID === "YOUR_CLIENT_ID_HERE") {
+    // These are placeholder IDs and should be considered as not configured.
+    const isConfigured = AAD_CLIENT_ID && 
+                         AAD_CLIENT_ID !== "YOUR_CLIENT_ID_HERE" && 
+                         AAD_CLIENT_ID !== "71dda0f5-927b-4afc-b744-92c763718b3f";
+
+    if (!isConfigured) {
         return false;
     }
     return msalInstance.getAllAccounts().length > 0;

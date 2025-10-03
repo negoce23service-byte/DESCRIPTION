@@ -12,6 +12,7 @@ import AdminLogin from './components/AdminLogin';
 import { useLanguage } from './context/LanguageContext';
 import FileUpload from './components/FileUpload';
 import CategorySelector from './components/CategorySelector';
+import { uploadFile, isAuthenticated } from './lib/oneDrive';
 
 const UserIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -88,6 +89,8 @@ const App: React.FC = () => {
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [uploadStatusText, setUploadStatusText] = useState<string>('');
+
 
   const { t, language, dir } = useLanguage();
 
@@ -167,55 +170,58 @@ const App: React.FC = () => {
       setFormError(t('validationErrorAllFields'));
       return;
     }
+
+    if (!isAuthenticated()) {
+      setFormError(t('oneDriveNotConnectedError'));
+      return;
+    }
     
     setFormError(null);
     setStatus('loading');
     setUploadProgress({});
+    setUploadStatusText('');
 
-    const filesToUpload = formData.attachments;
-    if (filesToUpload.length > 0) {
-      const uploadPromises = filesToUpload.map(file => {
-        return new Promise<void>(resolve => {
-          let progress = 0;
-          const interval = setInterval(() => {
-            progress += Math.random() * 25 + 5;
-            if (progress >= 100) {
-              progress = 100;
-              clearInterval(interval);
-              resolve();
-            }
-            setUploadProgress(prev => ({ ...prev, [file.name]: progress }));
-          }, 300);
-        });
-      });
+    try {
+      const filesToUpload = formData.attachments;
+      const uploadedFileNames: string[] = [];
+      
+      setUploadStatusText(t('submitUploading'));
+
+      const uploadPromises = filesToUpload.map(file => 
+        uploadFile(file, 'RegistrationAttachments', (progress) => {
+          setUploadProgress(prev => ({ ...prev, [file.name]: progress }));
+        }).then(result => {
+          if (result.name) {
+            uploadedFileNames.push(result.name);
+          }
+        })
+      );
+
       await Promise.all(uploadPromises);
-    } else {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    
-    // Simulate final API call
-    if (formData.email.includes('error')) {
-      setStatus('error');
-    } else {
+      
+      const { attachments, ...rest } = formData;
+      const newRegistration: Registration = {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        status: 'pending',
+        submissionDate: new Date().toISOString(),
+        ...rest,
+        attachmentNames: uploadedFileNames,
+      };
+
+      const existingRegistrationsRaw = localStorage.getItem('registrations');
+      const existingRegistrations: Registration[] = existingRegistrationsRaw ? JSON.parse(existingRegistrationsRaw) : [];
+      const updatedRegistrations = [...existingRegistrations, newRegistration];
+      localStorage.setItem('registrations', JSON.stringify(updatedRegistrations));
+      
       setStatus('success');
-      console.log('Form Submitted:', formData);
-      try {
-          const existingRegistrationsRaw = localStorage.getItem('registrations');
-          const existingRegistrations: Registration[] = existingRegistrationsRaw ? JSON.parse(existingRegistrationsRaw) : [];
-          
-          const { attachments, ...rest } = formData;
-          const newRegistration: Registration = {
-              id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              status: 'pending',
-              submissionDate: new Date().toISOString(),
-              ...rest,
-              attachmentNames: attachments.map(f => f.name),
-          };
-          const updatedRegistrations = [...existingRegistrations, newRegistration];
-          localStorage.setItem('registrations', JSON.stringify(updatedRegistrations));
-      } catch (error) {
-          console.error("Failed to save registration to localStorage", error);
-      }
+      console.log('Form Submitted and files uploaded:', newRegistration);
+
+    } catch (error) {
+      console.error('Submission or upload failed:', error);
+      setStatus('error');
+      setFormError(error instanceof Error ? error.message : t('errorMessage'));
+    } finally {
+      setUploadStatusText('');
     }
   }, [formData, t]);
 
@@ -377,7 +383,7 @@ const App: React.FC = () => {
 
                   <div className="pt-4">
                     <SubmitButton disabled={isLoading}>
-                      {isLoading ? t('submitLoading') : t('submit')}
+                      {isLoading ? (uploadStatusText || t('submitLoading')) : t('submit')}
                     </SubmitButton>
                   </div>
                 </form>

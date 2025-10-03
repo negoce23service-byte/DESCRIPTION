@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Registration, RegistrationStatus } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import OneDriveConnect from './OneDriveConnect';
 
 declare var XLSX: any;
 
@@ -278,6 +279,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
               {t('adminBackToForm')}
             </button>
         </div>
+      </div>
+
+      <div className="mb-6">
+        <OneDriveConnect />
       </div>
 
       {registrations.length === 0 ? (

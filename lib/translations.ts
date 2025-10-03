@@ -79,14 +79,18 @@ export const translations = {
     ar: 'جاري التسجيل...',
     fr: 'Inscription en cours...',
   },
+  submitUploading: {
+    ar: 'جاري رفع الملفات...',
+    fr: 'Téléversement des fichiers...',
+  },
   // Status Messages
   successTitle: {
     ar: 'تم التسجيل بنجاح!',
     fr: 'Inscription réussie !',
   },
   successMessage: {
-    ar: 'شكرًا لك على تسجيلك. لقد أرسلنا رسالة تأكيد إلى بريدك الإلكتروني.',
-    fr: 'Merci pour votre inscription. Un e-mail de confirmation a été envoyé.',
+    ar: 'شكرًا لك على تسجيلك. لقد أرسلنا رسالة تأكيد إلى بريدك الإلكتروني وتم رفع ملفاتك.',
+    fr: 'Merci pour votre inscription. Un e-mail de confirmation a été envoyé et vos fichiers ont été téléversés.',
   },
   newRegistration: {
     ar: 'تسجيل جديد',
@@ -108,6 +112,10 @@ export const translations = {
   validationErrorAllFields: {
     ar: 'يرجى ملء جميع الحقول الإجبارية.',
     fr: 'Veuillez remplir tous les champs obligatoires.',
+  },
+  oneDriveNotConnectedError: {
+    ar: 'فشل الإرسال. يجب على مسؤول الموقع ربط حساب OneDrive أولاً من لوحة التحكم.',
+    fr: "L'envoi a échoué. L'administrateur du site doit d'abord connecter un compte OneDrive depuis le panneau d'administration.",
   },
   // Image Preview (Legacy, can be removed if not used elsewhere)
   imagePreviewLabel: {
@@ -255,5 +263,30 @@ export const translations = {
   downloadExcel: {
     ar: 'تحميل كملف Excel',
     fr: 'Télécharger en Excel',
+  },
+  // OneDrive
+  oneDriveConnectTitle: {
+    ar: 'الربط مع OneDrive',
+    fr: 'Connexion à OneDrive',
+  },
+  oneDriveConnectDescription: {
+    ar: 'قم بربط حساب OneDrive الخاص بك لتلقي ملفات التسجيل مباشرة في مجلد مخصص.',
+    fr: 'Connectez votre compte OneDrive pour recevoir les fichiers des inscriptions directement dans un dossier dédié.',
+  },
+  oneDriveConnectButton: {
+    ar: 'الربط الآن',
+    fr: 'Se connecter',
+  },
+  oneDriveConnectedAs: {
+    ar: 'متصل كـ:',
+    fr: 'Connecté en tant que :',
+  },
+  oneDriveDisconnect: {
+    ar: 'قطع الاتصال',
+    fr: 'Se déconnecter',
+  },
+  oneDriveNote: {
+    ar: 'ملاحظة: لتشغيل هذه الميزة، يجب على المطور إعداد "معرف العميل" للتطبيق في ملف lib/oneDrive.ts.',
+    fr: "Note : Pour activer cette fonctionnalité, un développeur doit configurer l'ID client de l'application dans le fichier lib/oneDrive.ts.",
   },
 };

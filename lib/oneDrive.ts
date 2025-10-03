@@ -14,7 +14,7 @@ declare const MicrosoftGraph: any;
 // 7. Copy the "Application (client) ID" from the app overview and paste it below.
 // ==========================================================================================
 
-const AAD_CLIENT_ID = "edecc608-cd3b-4af7-9652-50f7386e2d9f"; // <-- PASTE YOUR CLIENT ID HERE
+const AAD_CLIENT_ID = "71dda0f5-927b-4afc-b744-92c763718b3f"; // <-- PASTE YOUR CLIENT ID HERE
 
 const msalConfig = {
     auth: {
@@ -122,8 +122,12 @@ export async function uploadFile(
         {
             rangeSize: 320 * 1024, // 320 KB chunks (Microsoft's recommendation)
             onProgress: (range: any) => {
-                const percentage = Math.round((range.maxValue / (file.size -1)) * 100);
-                onProgress(Math.min(percentage, 100)); // Cap at 100%
+                if (!file.size) {
+                  onProgress(100);
+                  return;
+                }
+                const percentage = Math.round(((range.maxValue + 1) / file.size) * 100);
+                onProgress(Math.min(percentage, 100));
             },
         }
     );

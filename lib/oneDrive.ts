@@ -103,7 +103,7 @@ export function isAuthenticated() {
 
 export async function uploadFile(
     file: File,
-    folderName: string,
+    folderPath: string,
     onProgress: (percentage: number) => void
 ): Promise<any> {
     if (!isAuthenticated()) {
@@ -112,12 +112,11 @@ export async function uploadFile(
     
     initializeGraphClient();
 
-    // Sanitize file and folder names
-    const safeFolderName = folderName.replace(/[^a-zA-Z0-9-_\. ]/g, '_');
+    // Sanitize just the file name
     const safeFileName = file.name.replace(/[^a-zA-Z0-9-_\. ]/g, '_');
 
     const uniqueFileName = `${Date.now()}_${safeFileName}`;
-    const uploadPath = `/drive/root:/${safeFolderName}/${uniqueFileName}:/createUploadSession`;
+    const uploadPath = `/drive/root:/${folderPath}/${uniqueFileName}:/createUploadSession`;
 
     const uploadSessionPayload = {
         item: {

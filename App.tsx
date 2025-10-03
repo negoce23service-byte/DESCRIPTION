@@ -182,13 +182,19 @@ const App: React.FC = () => {
     setUploadStatusText('');
 
     try {
-      const filesToUpload = formData.attachments;
+      // Create a unique, sanitized folder path for this specific registration
+      const sanitizedFullName = fullName.replace(/[^a-zA-Z0-9-_\. ]/g, '_').trim();
+      const sanitizedNationalId = nationalId.replace(/[^a-zA-Z0-9-_\. ]/g, '_').trim();
+      const userSpecificFolderName = `${sanitizedFullName}_${sanitizedNationalId}`;
+      const rootFolderName = 'RegistrationAttachments';
+      const fullFolderPath = `${rootFolderName}/${userSpecificFolderName}`;
+      
       const uploadedFileNames: string[] = [];
       
       setUploadStatusText(t('submitUploading'));
 
-      const uploadPromises = filesToUpload.map(file => 
-        uploadFile(file, 'RegistrationAttachments', (progress) => {
+      const uploadPromises = attachments.map(file => 
+        uploadFile(file, fullFolderPath, (progress) => {
           setUploadProgress(prev => ({ ...prev, [file.name]: progress }));
         }).then(result => {
           if (result.name) {
@@ -199,7 +205,7 @@ const App: React.FC = () => {
 
       await Promise.all(uploadPromises);
       
-      const { attachments, ...rest } = formData;
+      const { attachments: _, ...rest } = formData;
       const newRegistration: Registration = {
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         status: 'pending',

@@ -1,11 +1,15 @@
 
+
 import React from 'react';
 import { FormData } from '../types';
 
 interface CategoryOption {
   value: FormData['category'];
   label: string;
-  icon: React.ReactNode;
+  // FIX: Changed icon type from `React.ReactNode` to a more specific type.
+  // This resolves a TypeScript error by ensuring that `React.cloneElement` receives an
+  // element that is known to accept a `className` prop.
+  icon: React.ReactElement<{ className?: string }>;
 }
 
 interface CategorySelectorProps {

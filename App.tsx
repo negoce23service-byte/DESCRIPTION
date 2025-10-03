@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { FormData, SubmissionStatus, Registration } from './types';
 import Header from './components/Header';
@@ -230,7 +231,7 @@ const App: React.FC = () => {
   if (view === 'login') {
     return (
         <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 selection:bg-amber-100">
-            <div className="max-w-lg w-full bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
+            <div className="max-w-3xl w-full bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
                 <LanguageSwitcher />
                 <AdminLogin 
                     onLoginSuccess={() => {
@@ -248,7 +249,7 @@ const App: React.FC = () => {
     if (!isAdminAuthenticated) {
         return (
              <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 selection:bg-amber-100">
-                <div className="max-w-lg w-full bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
+                <div className="max-w-3xl w-full bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
                     <LanguageSwitcher />
                     <AdminLogin 
                         onLoginSuccess={() => {
@@ -282,7 +283,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 selection:bg-amber-100">
-      <div className="max-w-lg w-full bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
+      <div className="max-w-3xl w-full bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
         <LanguageSwitcher />
         {status === 'success' || status === 'error' ? (
             <StatusMessage status={status} onReset={handleReset} messages={statusMessages} />

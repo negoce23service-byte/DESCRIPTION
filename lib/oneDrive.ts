@@ -60,7 +60,7 @@ async function getToken() {
 }
 
 function initializeGraphClient() {
-    if (AAD_CLIENT_ID === "YOUR_CLIENT_ID_HERE") {
+    if (AAD_CLIENT_ID === "71dda0f5-927b-4afc-b744-92c763718b3f") {
         console.warn("OneDrive functionality is disabled. Please configure your AAD_CLIENT_ID in lib/oneDrive.ts");
         throw new Error("OneDrive Client ID is not configured.");
     }
@@ -83,7 +83,7 @@ export function getLoginRequest() {
 }
 
 export function isAuthenticated() {
-    if (AAD_CLIENT_ID === "YOUR_CLIENT_ID_HERE") {
+    if (AAD_CLIENT_ID === "71dda0f5-927b-4afc-b744-92c763718b3f") {
         return false;
     }
     return msalInstance.getAllAccounts().length > 0;

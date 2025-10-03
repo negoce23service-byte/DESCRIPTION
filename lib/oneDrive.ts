@@ -17,7 +17,7 @@ declare const MicrosoftGraph: any;
 // FIX: Changed from 'const' to 'let' to avoid a TypeScript error where comparisons
 // against this placeholder value were flagged as unintentional. This allows the
 // configuration checks below to function as expected.
-let AAD_CLIENT_ID = "71dda0f5-927b-4afc-b744-92c763718b3f"; // <-- PASTE YOUR CLIENT ID HERE
+let AAD_CLIENT_ID = "f3a703a4-a944-4a5b-8c29-4257c29fcd15"; // <-- PASTE YOUR CLIENT ID HERE
 
 const msalConfig = {
     auth: {

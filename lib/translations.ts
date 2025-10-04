@@ -157,6 +157,10 @@ export const translations = {
     ar: 'العودة إلى نموذج التسجيل',
     fr: "Retour au formulaire d'inscription",
   },
+  adminFetchError: {
+    ar: 'فشل تحميل بيانات التسجيل. يرجى المحاولة مرة أخرى.',
+    fr: "Échec du chargement des données d'inscription. Veuillez réessayer."
+  },
   fullName: {
     ar: 'الاسم الكامل',
     fr: 'Nom complet',
@@ -291,12 +295,12 @@ export const translations = {
   },
   // OneDrive
   uploadingFiles: {
-      ar: 'جاري رفع الملفات إلى OneDrive...',
-      fr: 'Téléversement des fichiers sur OneDrive...'
+      ar: 'جاري رفع الملفات...',
+      fr: 'Téléversement des fichiers...'
   },
   uploadError: {
-      ar: 'فشل رفع الملفات إلى OneDrive. يرجى التأكد من صحة الإعدادات والمحاولة مرة أخرى.',
-      fr: 'Échec du téléversement sur OneDrive. Veuillez vérifier la configuration et réessayer.'
+      ar: 'فشل رفع الملفات. يرجى التأكد من صحة الإعدادات والمحاولة مرة أخرى.',
+      fr: 'Échec du téléversement. Veuillez vérifier la configuration et réessayer.'
   },
   oneDriveLink: {
       ar: 'رابط OneDrive',
@@ -305,10 +309,5 @@ export const translations = {
   viewFiles: {
       ar: 'عرض الملفات',
       fr: 'Voir les fichiers'
-  },
-  // Admin Data Fetching
-  adminFetchError: {
-    ar: 'فشل تحميل السجلات. يرجى تحديث الصفحة.',
-    fr: 'Erreur de chargement des inscriptions. Veuillez rafraîchir la page.'
   }
 };

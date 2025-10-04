@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { FormData, SubmissionStatus } from './types';
+import { FormData, SubmissionStatus, Registration } from './types';
 import Header from './components/Header';
 import FormField from './components/FormField';
 import SubmitButton from './components/SubmitButton';
@@ -130,6 +130,8 @@ const App: React.FC = () => {
     setSubmissionMessage(t('submitLoading'));
 
     try {
+      const { attachments, ...restOfForm } = formData;
+      
       setSubmissionMessage(t('uploadingFiles'));
       
       const filesPayload = await Promise.all(
@@ -139,23 +141,19 @@ const App: React.FC = () => {
           data: await fileToBase64(file),
         }))
       );
-      
-      // The attachments object itself is not sent, only the serializable data
-      const { attachments: _, ...formDataPayload } = formData;
 
       const response = await fetch('/.netlify/functions/submitRegistration', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formDataPayload,
-          files: filesPayload,
-        }),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+              ...restOfForm,
+              attachments: filesPayload,
+          }),
       });
 
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to submit registration. Please check server logs.' }));
+        const errorData = await response.json().catch(() => ({ message: 'Failed to submit registration. Please contact support.' }));
         throw new Error(errorData.message || 'An unknown error occurred during submission.');
       }
       
@@ -166,7 +164,7 @@ const App: React.FC = () => {
         console.error('Submission failed:', error);
         setStatus('error');
         const errorMessage = error instanceof Error ? error.message : t('errorMessage');
-        if (errorMessage.toLowerCase().includes('token') || errorMessage.includes('401') || errorMessage.includes('onedrive')) {
+        if (errorMessage.toLowerCase().includes('token') || errorMessage.includes('401') || errorMessage.includes('OneDrive')) {
             setFormError(t('uploadError'));
         } else {
             setFormError(errorMessage);

@@ -1,12 +1,11 @@
 {
-  "name": "prix-de-presse-form",
+  "name": "prix-de-press-form",
   "version": "1.0.0",
-  "description": "Registration form for the Grand Prix de la Presse Agricole et Rurale.",
-  "private": true,
+  "description": "Registration form with Netlify Functions and Blobs.",
   "scripts": {
     "start": "netlify dev"
   },
   "devDependencies": {
-    "netlify-cli": "^17.23.1"
+    "netlify-cli": "^17.23.2"
   }
 }

@@ -70,22 +70,20 @@ const DownloadIcon = () => (
 );
 
 const LoadingSpinner = () => (
-    <div className="flex justify-center items-center py-10">
-        <svg className="animate-spin h-8 w-8 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-    </div>
+    <svg className="animate-spin h-8 w-8 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
 );
 
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { t, language } = useLanguage();
   const [editingRegistration, setEditingRegistration] = useState<Registration | null>(null);
   const [deletingRegistrationId, setDeletingRegistrationId] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
   
   type SortableKeys = 'submissionDate' | 'fullName' | 'email' | 'nationalId' | 'category' | 'status';
@@ -93,28 +91,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
 
   const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: SortDirection } | null>({ key: 'submissionDate', direction: 'descending' });
 
+  const fetchRegistrations = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/.netlify/functions/getRegistrations');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Failed to fetch data from the server.');
+      }
+      const data: Registration[] = await response.json();
+      setRegistrations(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      console.error('Failed to fetch registrations', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const fetchRegistrations = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await fetch('/.netlify/functions/getRegistrations');
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Failed to fetch registrations');
-            }
-            const data = await response.json();
-            setRegistrations(data.registrations || []);
-        } catch (err) {
-            console.error('Failed to load registrations', err);
-            const errorMessage = err instanceof Error ? err.message : t('adminFetchError');
-            setError(errorMessage);
-        } finally {
-            setLoading(false);
-        }
-    };
     fetchRegistrations();
-  }, [t]);
+  }, [fetchRegistrations]);
   
   const handleSaveChanges = async (updatedRegistration: Registration) => {
     try {
@@ -123,17 +121,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updatedRegistration),
         });
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || 'Failed to save changes');
-        }
-        
-        const updatedList = registrations.map(reg => reg.id === updatedRegistration.id ? updatedRegistration : reg);
-        setRegistrations(updatedList);
+        if (!response.ok) throw new Error('Failed to save changes.');
+
+        setRegistrations(prev => prev.map(reg => reg.id === updatedRegistration.id ? updatedRegistration : reg));
         setEditingRegistration(null);
     } catch (err) {
-        console.error('Error saving changes:', err);
-        alert(err instanceof Error ? err.message : 'Could not save changes.');
+        console.error('Failed to save registration:', err);
+        alert(`Error: ${err instanceof Error ? err.message : 'Could not save changes.'}`);
     }
   };
 
@@ -145,16 +139,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: deletingRegistrationId }),
             });
-             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Failed to delete registration');
-            }
-            const updatedList = registrations.filter(reg => reg.id !== deletingRegistrationId);
-            setRegistrations(updatedList);
+            if (!response.ok) throw new Error('Failed to delete.');
+
+            setRegistrations(prev => prev.filter(reg => reg.id !== deletingRegistrationId));
             setDeletingRegistrationId(null);
         } catch (err) {
-            console.error('Error deleting registration:', err);
-            alert(err instanceof Error ? err.message : 'Could not delete registration.');
+            console.error('Failed to delete registration:', err);
+            alert(`Error: ${err instanceof Error ? err.message : 'Could not delete registration.'}`);
         }
     }
   };
@@ -313,17 +304,29 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   );
   
   const renderContent = () => {
-      if (loading) {
-          return <LoadingSpinner />;
-      }
-      if (error) {
-          return <p className="text-center text-rose-600 py-10">{error}</p>
-      }
-      if (registrations.length === 0) {
-          return <p className="text-center text-stone-500 py-10">{t('adminNoRegistrations')}</p>;
-      }
-      
+    if (isLoading) {
       return (
+        <div className="flex flex-col items-center justify-center py-20">
+          <LoadingSpinner />
+          <p className="mt-4 text-stone-600">Loading registrations...</p>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="py-20 text-center">
+            <p className="font-semibold text-rose-600">{t('adminFetchError')}</p>
+            <p className="mt-2 text-sm text-stone-500">{error}</p>
+        </div>
+      );
+    }
+
+    if (registrations.length === 0) {
+      return <p className="text-center text-stone-500 py-10">{t('adminNoRegistrations')}</p>;
+    }
+
+    return (
         <div className="overflow-x-auto rounded-lg border border-stone-200 shadow-sm">
           <table className="min-w-full divide-y divide-stone-200 bg-white text-sm">
             <thead className="bg-stone-100">
@@ -394,7 +397,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             </tbody>
           </table>
         </div>
-      );
+    );
   };
 
 
@@ -405,7 +408,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         <div className="flex items-center space-x-2 rtl:space-x-reverse">
              <button
                 onClick={handleDownloadExcel}
-                disabled={registrations.length === 0 || loading}
+                disabled={registrations.length === 0 || isLoading}
                 className="inline-flex items-center justify-center rounded-md border border-emerald-600 bg-white px-4 py-2 text-sm font-medium text-emerald-700 shadow-sm hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
                 <DownloadIcon />
@@ -419,9 +422,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             </button>
         </div>
       </div>
-      
+
       {renderContent()}
-      
+
       {editingRegistration && (
         <EditRegistrationModal
             registration={editingRegistration}

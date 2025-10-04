@@ -12,7 +12,7 @@ import AdminLogin from './components/AdminLogin';
 import { useLanguage } from './context/LanguageContext';
 import FileUpload from './components/FileUpload';
 import CategorySelector from './components/CategorySelector';
-import { uploadFile, isAuthenticated } from './lib/oneDrive';
+import { uploadFile, isAuthenticated, initializeGoogleClients } from './lib/oneDrive';
 
 const UserIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -103,6 +103,10 @@ const App: React.FC = () => {
   }, [language, dir, t]);
 
   useEffect(() => {
+    initializeGoogleClients();
+  }, []);
+
+  useEffect(() => {
     const newPreviews: Record<string, string> = {};
     formData.attachments.forEach(file => {
       if (file.type.startsWith('image/')) {
@@ -172,7 +176,7 @@ const App: React.FC = () => {
     }
 
     if (!isAuthenticated()) {
-      setFormError(t('oneDriveNotConnectedError'));
+      setFormError(t('googleDriveNotConnectedError'));
       return;
     }
     

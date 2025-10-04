@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Registration, RegistrationStatus } from '../types';
 import { useLanguage } from '../context/LanguageContext';
-import OneDriveConnect from './OneDriveConnect';
+import ConfirmationModal from './ConfirmationModal';
+import EditRegistrationModal from './EditRegistrationModal';
+import { PencilIcon, TrashIcon } from './Icons';
 
 declare var XLSX: any;
 
@@ -71,6 +73,9 @@ const DownloadIcon = () => (
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const { t, language } = useLanguage();
+  const [editingRegistration, setEditingRegistration] = useState<Registration | null>(null);
+  const [deletingRegistrationId, setDeletingRegistrationId] = useState<string | null>(null);
+
   
   type SortableKeys = 'submissionDate' | 'fullName' | 'email' | 'nationalId' | 'category' | 'status';
   type SortDirection = 'ascending' | 'descending';
@@ -88,24 +93,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
       setRegistrations([]);
     }
   }, []);
-
-  const handleUpdateStatus = (id: string, status: RegistrationStatus) => {
-    const updatedRegistrations = registrations.map(reg =>
-      reg.id === id ? { ...reg, status } : reg
-    );
-    setRegistrations(updatedRegistrations);
-    localStorage.setItem('registrations', JSON.stringify(updatedRegistrations));
-
-    const user = updatedRegistrations.find(reg => reg.id === id);
-    if (user) {
-      if (status === 'confirmed') {
-        alert(`${t('emailSimulationConfirm')} ${user.email}`);
-      } else if (status === 'rejected') {
-        alert(`${t('emailSimulationReject')} ${user.email}`);
-      }
-    }
+  
+  const handleSaveChanges = (updatedRegistration: Registration) => {
+    const updatedList = registrations.map(reg => reg.id === updatedRegistration.id ? updatedRegistration : reg);
+    setRegistrations(updatedList);
+    localStorage.setItem('registrations', JSON.stringify(updatedList));
+    setEditingRegistration(null);
   };
 
+  const handleConfirmDelete = () => {
+    if (deletingRegistrationId) {
+        const updatedList = registrations.filter(reg => reg.id !== deletingRegistrationId);
+        setRegistrations(updatedList);
+        localStorage.setItem('registrations', JSON.stringify(updatedList));
+        setDeletingRegistrationId(null);
+    }
+  };
 
   const getCategoryTranslation = useCallback((category: Registration['category']) => {
     switch (category) {
@@ -180,6 +183,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         [t('nationalId')]: reg.nationalId || '-',
         [t('phone')]: reg.phone || '-',
         [t('category')]: getCategoryTranslation(reg.category),
+        [t('oneDriveLink')]: reg.oneDriveFolderUrl || '-',
         [t('status')]: getStatusTranslation(reg.status),
         [t('attachmentsColumn')]: reg.attachmentNames?.join(', ') || ''
     }));
@@ -218,7 +222,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
           if (R % 2 === 0) { // Apply zebra stripe to even data rows (R=2, 4, etc.)
             cell.s.fill = zebraStripeStyle.fill;
           }
-          if (C === 0 || C === 6 || C === 7) { // Center align #, Category, Status
+          if (C === 0 || C === 6 || C === 8) { // Center align #, Category, Status
             if (!cell.s.alignment) cell.s.alignment = {};
             cell.s.alignment.horizontal = "center";
           }
@@ -235,6 +239,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         { wch: 15 }, // National ID
         { wch: 15 }, // Phone
         { wch: 20 }, // Category
+        { wch: 40 }, // OneDrive Link
         { wch: 15 }, // Status
         { wch: 40 }, // Attachments
     ];
@@ -281,10 +286,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         </div>
       </div>
 
-      <div className="mb-6">
-        <OneDriveConnect />
-      </div>
-
       {registrations.length === 0 ? (
         <p className="text-center text-stone-500 py-10">{t('adminNoRegistrations')}</p>
       ) : (
@@ -299,6 +300,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                 {renderSortableHeader('nationalId', t('nationalId'))}
                 <th className="whitespace-nowrap px-4 py-3 text-start font-medium text-stone-900">{t('phone')}</th>
                 {renderSortableHeader('category', t('category'))}
+                <th className="whitespace-nowrap px-4 py-3 text-start font-medium text-stone-900">{t('oneDriveLink')}</th>
                 {renderSortableHeader('status', t('status'))}
                 <th className="whitespace-nowrap px-4 py-3 text-start font-medium text-stone-900">{t('actions')}</th>
               </tr>
@@ -317,34 +319,64 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                       <p className="whitespace-nowrap text-sm">{getCategoryTranslation(reg.category)}</p>
                     </span>
                   </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-stone-700">
+                    {reg.oneDriveFolderUrl ? (
+                      <a href={reg.oneDriveFolderUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-sm font-medium text-amber-600 hover:text-amber-800 hover:underline">
+                        {t('viewFiles')}
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ltr:ml-1 rtl:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </a>
+                    ) : (
+                      '-'
+                    )}
+                  </td>
                    <td className="whitespace-nowrap px-4 py-3 text-stone-700">
                     <span className={`inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeClasses(reg.status)}`}>
                         {getStatusTranslation(reg.status)}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">
-                    {reg.status === 'pending' && (
-                        <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                            <button
-                                onClick={() => handleUpdateStatus(reg.id, 'confirmed')}
-                                className="inline-flex items-center justify-center rounded-md border border-transparent bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors"
-                            >
-                                {t('confirm')}
-                            </button>
-                            <button
-                                onClick={() => handleUpdateStatus(reg.id, 'rejected')}
-                                className="inline-flex items-center justify-center rounded-md border border-transparent bg-rose-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition-colors"
-                            >
-                                {t('reject')}
-                            </button>
-                        </div>
-                    )}
+                    <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                        <button
+                            onClick={() => setEditingRegistration(reg)}
+                            className="p-1.5 text-stone-500 rounded-full hover:bg-amber-100 hover:text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 transition-colors"
+                            aria-label={t('edit')}
+                        >
+                            <PencilIcon />
+                        </button>
+                        <button
+                            onClick={() => setDeletingRegistrationId(reg.id)}
+                            className="p-1.5 text-stone-500 rounded-full hover:bg-rose-100 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-1 transition-colors"
+                            aria-label={t('delete')}
+                        >
+                            <TrashIcon />
+                        </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+      {editingRegistration && (
+        <EditRegistrationModal
+            registration={editingRegistration}
+            onClose={() => setEditingRegistration(null)}
+            onSave={handleSaveChanges}
+        />
+      )}
+      {deletingRegistrationId && (
+        <ConfirmationModal
+            isOpen={!!deletingRegistrationId}
+            onClose={() => setDeletingRegistrationId(null)}
+            onConfirm={handleConfirmDelete}
+            title={t('deleteRegistrationTitle')}
+            message={t('deleteConfirmationMessage')}
+            confirmButtonText={t('confirmDeletion')}
+            cancelButtonText={t('cancel')}
+        />
       )}
     </>
   );

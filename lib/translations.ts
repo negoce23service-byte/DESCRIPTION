@@ -79,10 +79,6 @@ export const translations = {
     ar: 'جاري التسجيل...',
     fr: 'Inscription en cours...',
   },
-  submitUploading: {
-    ar: 'جاري رفع الملفات...',
-    fr: 'Téléversement des fichiers...',
-  },
   // Status Messages
   successTitle: {
     ar: 'تم التسجيل بنجاح!',
@@ -112,10 +108,6 @@ export const translations = {
   validationErrorAllFields: {
     ar: 'يرجى ملء جميع الحقول الإجبارية.',
     fr: 'Veuillez remplir tous les champs obligatoires.',
-  },
-  googleDriveNotConnectedError: {
-    ar: 'فشل الإرسال. يجب على مسؤول الموقع ربط حساب Google Drive أولاً من لوحة التحكم.',
-    fr: "L'envoi a échoué. L'administrateur du site doit d'abord connecter un compte Google Drive depuis le panneau d'administration.",
   },
   // Image Preview (Legacy, can be removed if not used elsewhere)
   imagePreviewLabel: {
@@ -264,29 +256,54 @@ export const translations = {
     ar: 'تحميل كملف Excel',
     fr: 'Télécharger en Excel',
   },
-  // Google Drive
-  googleDriveConnectTitle: {
-    ar: 'الربط مع Google Drive',
-    fr: 'Connexion à Google Drive',
+  // Edit/Delete actions
+  edit: {
+    ar: 'تعديل',
+    fr: 'Modifier',
   },
-  googleDriveConnectDescription: {
-    ar: 'قم بربط حساب Google Drive الخاص بك لتلقي ملفات التسجيل مباشرة في مجلد مخصص.',
-    fr: 'Connectez votre compte Google Drive pour recevoir les fichiers des inscriptions directement dans un dossier dédié.',
+  delete: {
+    ar: 'حذف',
+    fr: 'Supprimer',
   },
-  googleDriveConnectButton: {
-    ar: 'تسجيل الدخول بحساب Google',
-    fr: 'Se connecter avec Google',
+  save: {
+    ar: 'حفظ',
+    fr: 'Enregistrer',
   },
-  googleDriveConnectedAs: {
-    ar: 'متصل كـ:',
-    fr: 'Connecté en tant que :',
+  cancel: {
+    ar: 'إلغاء',
+    fr: 'Annuler',
   },
-  googleDriveDisconnect: {
-    ar: 'قطع الاتصال',
-    fr: 'Se déconnecter',
+  editRegistrationTitle: {
+    ar: 'تعديل التسجيل',
+    fr: "Modifier l'inscription",
   },
-  googleDriveNote: {
-    ar: 'ملاحظة: لتشغيل هذه الميزة، يجب على المطور إعداد "مفتاح API" و "معرف العميل" للتطبيق.',
-    fr: "Note : Pour activer cette fonctionnalité, un développeur doit configurer la clé API et l'ID client de l'application.",
+  deleteRegistrationTitle: {
+    ar: 'حذف التسجيل',
+    fr: "Supprimer l'inscription",
   },
+  deleteConfirmationMessage: {
+    ar: 'هل أنت متأكد أنك تريد حذف هذا التسجيل؟ لا يمكن التراجع عن هذا الإجراء.',
+    fr: 'Êtes-vous sûr de vouloir supprimer cette inscription ? Cette action est irréversible.',
+  },
+  confirmDeletion: {
+    ar: 'تأكيد الحذف',
+    fr: 'Confirmer la suppression',
+  },
+  // OneDrive
+  uploadingFiles: {
+      ar: 'جاري رفع الملفات إلى OneDrive...',
+      fr: 'Téléversement des fichiers sur OneDrive...'
+  },
+  uploadError: {
+      ar: 'فشل رفع الملفات إلى OneDrive. يرجى التأكد من صحة الإعدادات والمحاولة مرة أخرى.',
+      fr: 'Échec du téléversement sur OneDrive. Veuillez vérifier la configuration et réessayer.'
+  },
+  oneDriveLink: {
+      ar: 'رابط OneDrive',
+      fr: 'Lien OneDrive'
+  },
+  viewFiles: {
+      ar: 'عرض الملفات',
+      fr: 'Voir les fichiers'
+  }
 };

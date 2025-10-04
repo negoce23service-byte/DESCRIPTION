@@ -1,5 +1,3 @@
-
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { FormData, SubmissionStatus, Registration } from './types';
 import Header from './components/Header';
@@ -12,64 +10,8 @@ import AdminLogin from './components/AdminLogin';
 import { useLanguage } from './context/LanguageContext';
 import FileUpload from './components/FileUpload';
 import CategorySelector from './components/CategorySelector';
-import { uploadFile, isAuthenticated, initializeGoogleClients } from './lib/oneDrive';
-
-const UserIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-    </svg>
-);
-
-const MailIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-    </svg>
-);
-
-const IdCardIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h2a2 2 0 012 2v1m-5 5a3 3 0 11-6 0 3 3 0 016 0z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M17 17l-1.07-1.071a5.5 5.5 0 00-7.858 0L7 17" />
-    </svg>
-);
-
-const PhoneIcon = () => (
-     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-    </svg>
-);
-
-// FIX: Update icon components to accept a className prop to allow dynamic styling.
-const NewspaperIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className ?? "h-full w-full text-stone-500 group-hover:text-amber-700"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-    </svg>
-);
-
-// FIX: Update icon components to accept a className prop to allow dynamic styling.
-const DesktopIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className ?? "h-full w-full text-stone-500 group-hover:text-amber-700"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" />
-    </svg>
-);
-
-// FIX: Update icon components to accept a className prop to allow dynamic styling.
-const MicrophoneIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className ?? "h-full w-full text-stone-500 group-hover:text-amber-700"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a3.375 3.375 0 0 0 3.375-3.375V5.25a3.375 3.375 0 0 0-6.75 0v10.125A3.375 3.375 0 0 0 12 18.75Z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 12v.75A4.5 4.5 0 0 0 12 17.25a4.5 4.5 0 0 0 4.5-4.5V12" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75v2.25" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 21h7.5" />
-    </svg>
-);
-
-
-// FIX: Update icon components to accept a className prop to allow dynamic styling.
-const TvIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className ?? "h-full w-full text-stone-500 group-hover:text-amber-700"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6 20.25h12m-7.5-3.75v3.75m-3.75-3.75v3.75m0-3.75h3.75m9-6.75v6.75c0 .621-.504 1.125-1.125 1.125H5.625c-.621 0-1.125-.504-1.125-1.125V9.75c0-.621.504-1.125 1.125-1.125h12.75c.621 0 1.125.504 1.125 1.125z" />
-    </svg>
-);
+import { UserIcon, MailIcon, IdCardIcon, PhoneIcon, NewspaperIcon, DesktopIcon, MicrophoneIcon, TvIcon } from './components/Icons';
+import { uploadFilesToOneDrive } from './lib/oneDrive';
 
 
 const getInitialFormData = (): FormData => ({
@@ -87,9 +29,8 @@ const App: React.FC = () => {
   const [view, setView] = useState<'form' | 'admin' | 'login'>('form');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [previews, setPreviews] = useState<Record<string, string>>({});
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [uploadStatusText, setUploadStatusText] = useState<string>('');
+  const [submissionMessage, setSubmissionMessage] = useState<string | null>(null);
 
 
   const { t, language, dir } = useLanguage();
@@ -101,10 +42,6 @@ const App: React.FC = () => {
     document.documentElement.dir = dir;
     document.title = t('formTitle');
   }, [language, dir, t]);
-
-  useEffect(() => {
-    initializeGoogleClients();
-  }, []);
 
   useEffect(() => {
     const newPreviews: Record<string, string> = {};
@@ -162,7 +99,6 @@ const App: React.FC = () => {
     setStatus('idle');
     setView('form');
     setPreviews({});
-    setUploadProgress({});
     setFormError(null);
   }, []);
 
@@ -175,39 +111,19 @@ const App: React.FC = () => {
       return;
     }
 
-    if (!isAuthenticated()) {
-      setFormError(t('googleDriveNotConnectedError'));
-      return;
-    }
-    
     setFormError(null);
     setStatus('loading');
-    setUploadProgress({});
-    setUploadStatusText('');
+    setSubmissionMessage(t('submitLoading'));
 
     try {
-      // Create a unique, sanitized folder path for this specific registration
-      const sanitizedFullName = fullName.replace(/[^a-zA-Z0-9-_\. ]/g, '_').trim();
-      const sanitizedNationalId = nationalId.replace(/[^a-zA-Z0-9-_\. ]/g, '_').trim();
-      const userSpecificFolderName = `${sanitizedFullName}_${sanitizedNationalId}`;
-      const rootFolderName = 'RegistrationAttachments';
-      const fullFolderPath = `${rootFolderName}/${userSpecificFolderName}`;
-      
-      const uploadedFileNames: string[] = [];
-      
-      setUploadStatusText(t('submitUploading'));
+      // Step 1: Upload files to OneDrive (if configured)
+      // This message shows even if not configured, as it's part of the submission process.
+      // The function will return quickly if no token is present.
+      setSubmissionMessage(t('uploadingFiles'));
+      const oneDriveFolderUrl = await uploadFilesToOneDrive(attachments, fullName);
 
-      const uploadPromises = attachments.map(file => 
-        uploadFile(file, fullFolderPath, (progress) => {
-          setUploadProgress(prev => ({ ...prev, [file.name]: progress }));
-        }).then(result => {
-          if (result.name) {
-            uploadedFileNames.push(result.name);
-          }
-        })
-      );
-
-      await Promise.all(uploadPromises);
+      // Step 2: Save registration data to local storage
+      const attachmentNames = attachments.map(file => file.name);
       
       const { attachments: _, ...rest } = formData;
       const newRegistration: Registration = {
@@ -215,7 +131,8 @@ const App: React.FC = () => {
         status: 'pending',
         submissionDate: new Date().toISOString(),
         ...rest,
-        attachmentNames: uploadedFileNames,
+        attachmentNames,
+        oneDriveFolderUrl,
       };
 
       const existingRegistrationsRaw = localStorage.getItem('registrations');
@@ -224,14 +141,23 @@ const App: React.FC = () => {
       localStorage.setItem('registrations', JSON.stringify(updatedRegistrations));
       
       setStatus('success');
-      console.log('Form Submitted and files uploaded:', newRegistration);
+      if (oneDriveFolderUrl) {
+        console.log('Form Submitted and files uploaded to OneDrive:', newRegistration);
+      } else {
+        console.log('Form Submitted. Files NOT uploaded to OneDrive (missing configuration).', newRegistration);
+      }
 
     } catch (error) {
-      console.error('Submission or upload failed:', error);
-      setStatus('error');
-      setFormError(error instanceof Error ? error.message : t('errorMessage'));
+        console.error('Submission failed:', error);
+        setStatus('error');
+        const errorMessage = error instanceof Error ? error.message : t('errorMessage');
+        if (errorMessage.toLowerCase().includes('token') || errorMessage.includes('401') || errorMessage.includes('OneDrive')) {
+            setFormError(t('uploadError'));
+        } else {
+            setFormError(errorMessage);
+        }
     } finally {
-      setUploadStatusText('');
+        setSubmissionMessage(null);
     }
   }, [formData, t]);
 
@@ -248,33 +174,18 @@ const App: React.FC = () => {
     successMessage: t('successMessage'),
     successButton: t('newRegistration'),
     errorTitle: t('errorTitle'),
-    errorMessage: t('errorMessage'),
+    errorMessage: formError || t('errorMessage'),
     errorButton: t('tryAgain'),
   };
   
   if (view === 'login') {
     return (
         <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 selection:bg-amber-100">
-            <div className="max-w-3xl w-full bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
-                <LanguageSwitcher />
-                <AdminLogin 
-                    onLoginSuccess={() => {
-                        setIsAdminAuthenticated(true);
-                        setView('admin');
-                    }} 
-                    onBack={() => setView('form')}
-                />
-            </div>
-        </div>
-    );
-  }
-
-  if (view === 'admin') {
-    if (!isAdminAuthenticated) {
-        return (
-             <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 selection:bg-amber-100">
-                <div className="max-w-3xl w-full bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
+            <div className="max-w-3xl w-full">
+                <div className="w-full flex justify-start rtl:justify-end mb-4">
                     <LanguageSwitcher />
+                </div>
+                <div className="bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
                     <AdminLogin 
                         onLoginSuccess={() => {
                             setIsAdminAuthenticated(true);
@@ -284,13 +195,40 @@ const App: React.FC = () => {
                     />
                 </div>
             </div>
+        </div>
+    );
+  }
+
+  if (view === 'admin') {
+    if (!isAdminAuthenticated) {
+        return (
+             <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 selection:bg-amber-100">
+                <div className="max-w-3xl w-full">
+                     <div className="w-full flex justify-start rtl:justify-end mb-4">
+                        <LanguageSwitcher />
+                    </div>
+                    <div className="bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
+                        <AdminLogin 
+                            onLoginSuccess={() => {
+                                setIsAdminAuthenticated(true);
+                                setView('admin');
+                            }} 
+                            onBack={() => setView('form')}
+                        />
+                    </div>
+                </div>
+            </div>
         );
     }
     return (
         <div className="min-h-screen bg-stone-50 flex flex-col items-center p-4 pt-8 selection:bg-amber-100">
-            <div className="w-full max-w-7xl bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
-                <LanguageSwitcher />
-                <AdminDashboard setView={setView} />
+            <div className="w-full max-w-7xl">
+                <div className="w-full flex justify-start rtl:justify-end mb-4">
+                    <LanguageSwitcher />
+                </div>
+                <div className="w-full bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
+                    <AdminDashboard setView={setView} />
+                </div>
             </div>
             <footer className="mt-6 text-center text-sm text-stone-500">
             </footer>
@@ -307,98 +245,102 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 selection:bg-amber-100">
-      <div className="max-w-3xl w-full bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
-        <LanguageSwitcher />
-        {status === 'success' || status === 'error' ? (
-            <StatusMessage status={status} onReset={handleReset} messages={statusMessages} />
-        ) : (
-            <>
-                <Header title={t('formTitle')} subtitle={t('formSubtitle')} />
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <FormField
-                    id="fullName"
-                    name="fullName"
-                    label={t('fullNameLabel')}
-                    type="text"
-                    placeholder={t('fullNamePlaceholder')}
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    required
-                    icon={<UserIcon />}
-                  />
-                  <FormField
-                    id="email"
-                    name="email"
-                    label={t('emailLabel')}
-                    type="email"
-                    placeholder={t('emailPlaceholder')}
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    icon={<MailIcon />}
-                  />
-                   <FormField
-                    id="nationalId"
-                    name="nationalId"
-                    label={t('nationalIdLabel')}
-                    type="text"
-                    placeholder={t('nationalIdPlaceholder')}
-                    value={formData.nationalId}
-                    onChange={handleChange}
-                    required
-                    icon={<IdCardIcon />}
-                  />
-                  <FormField
-                    id="phone"
-                    name="phone"
-                    label={t('phoneLabel')}
-                    type="tel"
-                    placeholder={t('phonePlaceholder')}
-                    value={formData.phone}
-                    onChange={handleChange}
-                    required
-                    icon={<PhoneIcon />}
-                  />
-                  <CategorySelector
-                    label={t('categoryLabel')}
-                    options={categoryOptions}
-                    selectedValue={formData.category}
-                    onChange={handleCategoryChange}
-                    required
-                  />
-                  <FileUpload
-                    id="attachments"
-                    name="attachments"
-                    label={t('attachmentLabel')}
-                    onFilesSelected={handleFilesChange}
-                    selectedFiles={formData.attachments}
-                    onFileRemove={handleFileRemove}
-                    uploadProgress={uploadProgress}
-                    previews={previews}
-                    disabled={isLoading}
-                    required
-                    translations={{
-                      dropzone: t('fileDropzone'),
-                      orClick: t('fileOrClick'),
-                      fileListTitle: t('fileListTitle'),
-                      removeFile: t('fileRemove'),
-                    }}
-                  />
-                  
-                  {formError && (
-                    <div className="my-2 text-center p-3 bg-rose-50 text-rose-800 rounded-md text-sm font-medium">
-                      {formError}
-                    </div>
-                  )}
+      <div className="max-w-3xl w-full">
+        <div className="w-full flex justify-start rtl:justify-end mb-4">
+            <LanguageSwitcher />
+        </div>
+        <div className="bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
+            {status === 'success' || status === 'error' ? (
+                <StatusMessage status={status} onReset={handleReset} messages={statusMessages} />
+            ) : (
+                <>
+                    <Header title={t('formTitle')} subtitle={t('formSubtitle')} />
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <FormField
+                        id="fullName"
+                        name="fullName"
+                        label={t('fullNameLabel')}
+                        type="text"
+                        placeholder={t('fullNamePlaceholder')}
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        required
+                        icon={<UserIcon />}
+                    />
+                    <FormField
+                        id="email"
+                        name="email"
+                        label={t('emailLabel')}
+                        type="email"
+                        placeholder={t('emailPlaceholder')}
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                        icon={<MailIcon />}
+                    />
+                    <FormField
+                        id="nationalId"
+                        name="nationalId"
+                        label={t('nationalIdLabel')}
+                        type="text"
+                        placeholder={t('nationalIdPlaceholder')}
+                        value={formData.nationalId}
+                        onChange={handleChange}
+                        required
+                        icon={<IdCardIcon />}
+                    />
+                    <FormField
+                        id="phone"
+                        name="phone"
+                        label={t('phoneLabel')}
+                        type="tel"
+                        placeholder={t('phonePlaceholder')}
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                        icon={<PhoneIcon />}
+                    />
+                    <CategorySelector
+                        label={t('categoryLabel')}
+                        options={categoryOptions}
+                        selectedValue={formData.category}
+                        onChange={handleCategoryChange}
+                        required
+                    />
+                    <FileUpload
+                        id="attachments"
+                        name="attachments"
+                        label={t('attachmentLabel')}
+                        onFilesSelected={handleFilesChange}
+                        selectedFiles={formData.attachments}
+                        onFileRemove={handleFileRemove}
+                        uploadProgress={{}}
+                        previews={previews}
+                        disabled={isLoading}
+                        required
+                        translations={{
+                        dropzone: t('fileDropzone'),
+                        orClick: t('fileOrClick'),
+                        fileListTitle: t('fileListTitle'),
+                        removeFile: t('fileRemove'),
+                        }}
+                    />
+                    
+                    {formError && (
+                        <div className="my-2 text-center p-3 bg-rose-50 text-rose-800 rounded-md text-sm font-medium">
+                        {formError}
+                        </div>
+                    )}
 
-                  <div className="pt-4">
-                    <SubmitButton disabled={isLoading}>
-                      {isLoading ? (uploadStatusText || t('submitLoading')) : t('submit')}
-                    </SubmitButton>
-                  </div>
-                </form>
-            </>
-        )}
+                    <div className="pt-4">
+                        <SubmitButton disabled={isLoading}>
+                          {submissionMessage || (isLoading ? t('submitLoading') : t('submit'))}
+                        </SubmitButton>
+                    </div>
+                    </form>
+                </>
+            )}
+        </div>
       </div>
       <footer className="mt-6 text-center text-sm text-stone-500">
         <button onClick={handleAdminClick} className="text-amber-600 hover:text-amber-800 underline">

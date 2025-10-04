@@ -14,6 +14,7 @@ export interface Registration extends Omit<FormData, 'attachments'> {
   status: RegistrationStatus;
   submissionDate: string;
   attachmentNames?: string[];
+  oneDriveFolderUrl?: string;
 }
 
 

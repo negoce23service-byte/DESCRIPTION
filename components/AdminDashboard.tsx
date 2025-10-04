@@ -69,12 +69,23 @@ const DownloadIcon = () => (
     </svg>
 );
 
+const LoadingSpinner = () => (
+    <div className="flex justify-center items-center py-10">
+        <svg className="animate-spin h-8 w-8 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+    </div>
+);
+
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const { t, language } = useLanguage();
   const [editingRegistration, setEditingRegistration] = useState<Registration | null>(null);
   const [deletingRegistrationId, setDeletingRegistrationId] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   
   type SortableKeys = 'submissionDate' | 'fullName' | 'email' | 'nationalId' | 'category' | 'status';
@@ -83,30 +94,68 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: SortDirection } | null>({ key: 'submissionDate', direction: 'descending' });
 
   useEffect(() => {
-    try {
-      const storedData = localStorage.getItem('registrations');
-      if (storedData) {
-        setRegistrations(JSON.parse(storedData));
-      }
-    } catch (error) {
-      console.error('Failed to parse registrations from localStorage', error);
-      setRegistrations([]);
-    }
-  }, []);
+    const fetchRegistrations = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/.netlify/functions/getRegistrations');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to fetch registrations');
+            }
+            const data = await response.json();
+            setRegistrations(data.registrations || []);
+        } catch (err) {
+            console.error('Failed to load registrations', err);
+            const errorMessage = err instanceof Error ? err.message : t('adminFetchError');
+            setError(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchRegistrations();
+  }, [t]);
   
-  const handleSaveChanges = (updatedRegistration: Registration) => {
-    const updatedList = registrations.map(reg => reg.id === updatedRegistration.id ? updatedRegistration : reg);
-    setRegistrations(updatedList);
-    localStorage.setItem('registrations', JSON.stringify(updatedList));
-    setEditingRegistration(null);
+  const handleSaveChanges = async (updatedRegistration: Registration) => {
+    try {
+        const response = await fetch('/.netlify/functions/updateRegistration', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedRegistration),
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Failed to save changes');
+        }
+        
+        const updatedList = registrations.map(reg => reg.id === updatedRegistration.id ? updatedRegistration : reg);
+        setRegistrations(updatedList);
+        setEditingRegistration(null);
+    } catch (err) {
+        console.error('Error saving changes:', err);
+        alert(err instanceof Error ? err.message : 'Could not save changes.');
+    }
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (deletingRegistrationId) {
-        const updatedList = registrations.filter(reg => reg.id !== deletingRegistrationId);
-        setRegistrations(updatedList);
-        localStorage.setItem('registrations', JSON.stringify(updatedList));
-        setDeletingRegistrationId(null);
+        try {
+            const response = await fetch('/.netlify/functions/deleteRegistration', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: deletingRegistrationId }),
+            });
+             if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to delete registration');
+            }
+            const updatedList = registrations.filter(reg => reg.id !== deletingRegistrationId);
+            setRegistrations(updatedList);
+            setDeletingRegistrationId(null);
+        } catch (err) {
+            console.error('Error deleting registration:', err);
+            alert(err instanceof Error ? err.message : 'Could not delete registration.');
+        }
     }
   };
 
@@ -262,33 +311,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         </button>
     </th>
   );
-
-
-  return (
-    <>
-      <div className="flex justify-between items-center my-6 flex-wrap gap-4">
-        <h1 className="text-2xl font-bold text-stone-800">{t('adminDashboardTitle')}</h1>
-        <div className="flex items-center space-x-2 rtl:space-x-reverse">
-             <button
-                onClick={handleDownloadExcel}
-                disabled={registrations.length === 0}
-                className="inline-flex items-center justify-center rounded-md border border-emerald-600 bg-white px-4 py-2 text-sm font-medium text-emerald-700 shadow-sm hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-                <DownloadIcon />
-                {t('downloadExcel')}
-            </button>
-            <button
-              onClick={() => setView('form')}
-              className="inline-flex items-center rounded-md border border-transparent bg-amber-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
-            >
-              {t('adminBackToForm')}
-            </button>
-        </div>
-      </div>
-
-      {registrations.length === 0 ? (
-        <p className="text-center text-stone-500 py-10">{t('adminNoRegistrations')}</p>
-      ) : (
+  
+  const renderContent = () => {
+      if (loading) {
+          return <LoadingSpinner />;
+      }
+      if (error) {
+          return <p className="text-center text-rose-600 py-10">{error}</p>
+      }
+      if (registrations.length === 0) {
+          return <p className="text-center text-stone-500 py-10">{t('adminNoRegistrations')}</p>;
+      }
+      
+      return (
         <div className="overflow-x-auto rounded-lg border border-stone-200 shadow-sm">
           <table className="min-w-full divide-y divide-stone-200 bg-white text-sm">
             <thead className="bg-stone-100">
@@ -359,7 +394,34 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             </tbody>
           </table>
         </div>
-      )}
+      );
+  };
+
+
+  return (
+    <>
+      <div className="flex justify-between items-center my-6 flex-wrap gap-4">
+        <h1 className="text-2xl font-bold text-stone-800">{t('adminDashboardTitle')}</h1>
+        <div className="flex items-center space-x-2 rtl:space-x-reverse">
+             <button
+                onClick={handleDownloadExcel}
+                disabled={registrations.length === 0 || loading}
+                className="inline-flex items-center justify-center rounded-md border border-emerald-600 bg-white px-4 py-2 text-sm font-medium text-emerald-700 shadow-sm hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+                <DownloadIcon />
+                {t('downloadExcel')}
+            </button>
+            <button
+              onClick={() => setView('form')}
+              className="inline-flex items-center rounded-md border border-transparent bg-amber-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+            >
+              {t('adminBackToForm')}
+            </button>
+        </div>
+      </div>
+      
+      {renderContent()}
+      
       {editingRegistration && (
         <EditRegistrationModal
             registration={editingRegistration}

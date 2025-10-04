@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { FormData, SubmissionStatus, Registration } from './types';
+import { FormData, SubmissionStatus } from './types';
 import Header from './components/Header';
 import FormField from './components/FormField';
 import SubmitButton from './components/SubmitButton';
@@ -130,7 +130,6 @@ const App: React.FC = () => {
     setSubmissionMessage(t('submitLoading'));
 
     try {
-      // Step 1: Upload files via our secure Netlify function
       setSubmissionMessage(t('uploadingFiles'));
       
       const filesPayload = await Promise.all(
@@ -141,51 +140,33 @@ const App: React.FC = () => {
         }))
       );
       
-      const response = await fetch('/.netlify/functions/uploadToOneDrive', {
+      // The attachments object itself is not sent, only the serializable data
+      const { attachments: _, ...formDataPayload } = formData;
+
+      const response = await fetch('/.netlify/functions/submitRegistration', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          folderName: fullName,
+          ...formDataPayload,
           files: filesPayload,
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to upload files. Please check the server logs.' }));
-        throw new Error(errorData.message || 'An unknown error occurred during file upload.');
+        const errorData = await response.json().catch(() => ({ message: 'Failed to submit registration. Please check server logs.' }));
+        throw new Error(errorData.message || 'An unknown error occurred during submission.');
       }
-
-      const { oneDriveFolderUrl } = await response.json();
-
-
-      // Step 2: Save registration data to local storage only after successful upload.
-      const attachmentNames = attachments.map(file => file.name);
-      
-      const { attachments: _, ...rest } = formData;
-      const newRegistration: Registration = {
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        status: 'pending',
-        submissionDate: new Date().toISOString(),
-        ...rest,
-        attachmentNames,
-        oneDriveFolderUrl,
-      };
-
-      const existingRegistrationsRaw = localStorage.getItem('registrations');
-      const existingRegistrations: Registration[] = existingRegistrationsRaw ? JSON.parse(existingRegistrationsRaw) : [];
-      const updatedRegistrations = [...existingRegistrations, newRegistration];
-      localStorage.setItem('registrations', JSON.stringify(updatedRegistrations));
       
       setStatus('success');
-      console.log('Form Submitted and files uploaded to OneDrive:', newRegistration);
+      console.log('Form Submitted and data saved successfully.');
 
     } catch (error) {
         console.error('Submission failed:', error);
         setStatus('error');
         const errorMessage = error instanceof Error ? error.message : t('errorMessage');
-        if (errorMessage.toLowerCase().includes('token') || errorMessage.includes('401') || errorMessage.includes('OneDrive')) {
+        if (errorMessage.toLowerCase().includes('token') || errorMessage.includes('401') || errorMessage.includes('onedrive')) {
             setFormError(t('uploadError'));
         } else {
             setFormError(errorMessage);

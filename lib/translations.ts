@@ -305,5 +305,10 @@ export const translations = {
   viewFiles: {
       ar: 'عرض الملفات',
       fr: 'Voir les fichiers'
+  },
+  // Admin Data Fetching
+  adminFetchError: {
+    ar: 'فشل تحميل السجلات. يرجى تحديث الصفحة.',
+    fr: 'Erreur de chargement des inscriptions. Veuillez rafraîchir la page.'
   }
 };

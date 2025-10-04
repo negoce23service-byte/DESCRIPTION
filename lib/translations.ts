@@ -157,10 +157,6 @@ export const translations = {
     ar: 'العودة إلى نموذج التسجيل',
     fr: "Retour au formulaire d'inscription",
   },
-  adminFetchError: {
-    ar: 'فشل تحميل بيانات التسجيل. يرجى المحاولة مرة أخرى.',
-    fr: "Échec du chargement des données d'inscription. Veuillez réessayer."
-  },
   fullName: {
     ar: 'الاسم الكامل',
     fr: 'Nom complet',
@@ -184,6 +180,31 @@ export const translations = {
   attachmentsColumn: {
     ar: 'المرفقات',
     fr: 'Pièces jointes',
+  },
+  // Admin Login
+  adminLoginTitle: {
+    ar: 'الوصول إلى لوحة التحكم',
+    fr: 'Accès Administrateur',
+  },
+  passwordLabel: {
+    ar: 'كلمة المرور',
+    fr: 'Mot de passe',
+  },
+  passwordPlaceholder: {
+    ar: 'أدخل كلمة المرور',
+    fr: 'Entrez le mot de passe',
+  },
+  loginButton: {
+    ar: 'تسجيل الدخول',
+    fr: 'Se connecter',
+  },
+  loginError: {
+    ar: 'كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.',
+    fr: 'Mot de passe incorrect. Veuillez réessayer.',
+  },
+  loginBackToForm: {
+    ar: 'العودة إلى النموذج',
+    fr: 'Retour au formulaire',
   },
   // Admin Dashboard Actions
   status: {
@@ -270,12 +291,12 @@ export const translations = {
   },
   // OneDrive
   uploadingFiles: {
-      ar: 'جاري رفع الملفات...',
-      fr: 'Téléversement des fichiers...'
+      ar: 'جاري رفع الملفات إلى OneDrive...',
+      fr: 'Téléversement des fichiers sur OneDrive...'
   },
   uploadError: {
-      ar: 'فشل رفع الملفات. يرجى التأكد من صحة الإعدادات والمحاولة مرة أخرى.',
-      fr: 'Échec du téléversement. Veuillez vérifier la configuration et réessayer.'
+      ar: 'فشل رفع الملفات إلى OneDrive. يرجى التأكد من صحة الإعدادات والمحاولة مرة أخرى.',
+      fr: 'Échec du téléversement sur OneDrive. Veuillez vérifier la configuration et réessayer.'
   },
   oneDriveLink: {
       ar: 'رابط OneDrive',

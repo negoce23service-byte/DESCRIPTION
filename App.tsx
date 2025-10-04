@@ -6,6 +6,7 @@ import SubmitButton from './components/SubmitButton';
 import StatusMessage from './components/StatusMessage';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import AdminDashboard from './components/AdminDashboard';
+import AdminLogin from './components/AdminLogin';
 import { useLanguage } from './context/LanguageContext';
 import FileUpload from './components/FileUpload';
 import CategorySelector from './components/CategorySelector';
@@ -39,7 +40,8 @@ const fileToBase64 = (file: File): Promise<string> => {
 const App: React.FC = () => {
   const [formData, setFormData] = useState<FormData>(getInitialFormData());
   const [status, setStatus] = useState<SubmissionStatus>('idle');
-  const [view, setView] = useState<'form' | 'admin'>('form');
+  const [view, setView] = useState<'form' | 'admin' | 'login'>('form');
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submissionMessage, setSubmissionMessage] = useState<string | null>(null);
@@ -128,8 +130,7 @@ const App: React.FC = () => {
     setSubmissionMessage(t('submitLoading'));
 
     try {
-      const { attachments, ...restOfForm } = formData;
-      
+      // Step 1: Upload files via our secure Netlify function
       setSubmissionMessage(t('uploadingFiles'));
       
       const filesPayload = await Promise.all(
@@ -139,24 +140,46 @@ const App: React.FC = () => {
           data: await fileToBase64(file),
         }))
       );
-
-      const response = await fetch('/.netlify/functions/submitRegistration', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-              ...restOfForm,
-              attachments: filesPayload,
-          }),
+      
+      const response = await fetch('/.netlify/functions/uploadToOneDrive', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          folderName: fullName,
+          files: filesPayload,
+        }),
       });
 
-
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to submit registration. Please contact support.' }));
-        throw new Error(errorData.message || 'An unknown error occurred during submission.');
+        const errorData = await response.json().catch(() => ({ message: 'Failed to upload files. Please check the server logs.' }));
+        throw new Error(errorData.message || 'An unknown error occurred during file upload.');
       }
+
+      const { oneDriveFolderUrl } = await response.json();
+
+
+      // Step 2: Save registration data to local storage only after successful upload.
+      const attachmentNames = attachments.map(file => file.name);
+      
+      const { attachments: _, ...rest } = formData;
+      const newRegistration: Registration = {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        status: 'pending',
+        submissionDate: new Date().toISOString(),
+        ...rest,
+        attachmentNames,
+        oneDriveFolderUrl,
+      };
+
+      const existingRegistrationsRaw = localStorage.getItem('registrations');
+      const existingRegistrations: Registration[] = existingRegistrationsRaw ? JSON.parse(existingRegistrationsRaw) : [];
+      const updatedRegistrations = [...existingRegistrations, newRegistration];
+      localStorage.setItem('registrations', JSON.stringify(updatedRegistrations));
       
       setStatus('success');
-      console.log('Form Submitted and data saved successfully.');
+      console.log('Form Submitted and files uploaded to OneDrive:', newRegistration);
 
     } catch (error) {
         console.error('Submission failed:', error);
@@ -173,7 +196,11 @@ const App: React.FC = () => {
   }, [formData, t]);
 
   const handleAdminClick = () => {
-    setView('admin');
+    if (isAdminAuthenticated) {
+      setView('admin');
+    } else {
+      setView('login');
+    }
   };
 
   const statusMessages = {
@@ -184,8 +211,49 @@ const App: React.FC = () => {
     errorMessage: formError || t('errorMessage'),
     errorButton: t('tryAgain'),
   };
+  
+  if (view === 'login') {
+    return (
+        <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 selection:bg-amber-100">
+            <div className="max-w-3xl w-full">
+                <div className="w-full flex justify-start rtl:justify-end mb-4">
+                    <LanguageSwitcher />
+                </div>
+                <div className="bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
+                    <AdminLogin 
+                        onLoginSuccess={() => {
+                            setIsAdminAuthenticated(true);
+                            setView('admin');
+                        }} 
+                        onBack={() => setView('form')}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+  }
 
   if (view === 'admin') {
+    if (!isAdminAuthenticated) {
+        return (
+             <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 selection:bg-amber-100">
+                <div className="max-w-3xl w-full">
+                     <div className="w-full flex justify-start rtl:justify-end mb-4">
+                        <LanguageSwitcher />
+                    </div>
+                    <div className="bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
+                        <AdminLogin 
+                            onLoginSuccess={() => {
+                                setIsAdminAuthenticated(true);
+                                setView('admin');
+                            }} 
+                            onBack={() => setView('form')}
+                        />
+                    </div>
+                </div>
+            </div>
+        );
+    }
     return (
         <div className="min-h-screen bg-stone-50 flex flex-col items-center p-4 pt-8 selection:bg-amber-100">
             <div className="w-full max-w-7xl">

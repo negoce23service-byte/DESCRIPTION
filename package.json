@@ -1,11 +1,22 @@
 {
-  "name": "prix-de-press-form",
-  "version": "1.0.0",
-  "description": "Registration form with Netlify Functions and Blobs.",
+  "name": "prix-de-press",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "start": "netlify dev"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react-dom": "^19.1.1",
+    "react": "^19.1.1",
+    "buffer": "^6.0.3"
   },
   "devDependencies": {
-    "netlify-cli": "^17.23.2"
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
   }
 }

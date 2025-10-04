@@ -21,10 +21,14 @@ interface DriveItem {
 
 const API_URL = 'https://graph.microsoft.com/v1.0';
 const ACCESS_TOKEN = process.env.ONEDRIVE_ACCESS_TOKEN;
+const ROOT_FOLDER = process.env.ONEDRIVE_ROOT_FOLDER;
 
-// Function to create a folder in the root of OneDrive
+// Function to create a folder inside the specified ROOT_FOLDER
 const createFolder = async (folderName: string): Promise<DriveItem> => {
-  const response = await fetch(`${API_URL}/me/drive/root/children`, {
+  // We construct the URL to create the new folder inside the designated root folder.
+  const createFolderUrl = `${API_URL}/me/drive/root:/${encodeURIComponent(ROOT_FOLDER!)}:/children`;
+
+  const response = await fetch(createFolderUrl, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${ACCESS_TOKEN}`,
@@ -40,15 +44,19 @@ const createFolder = async (folderName: string): Promise<DriveItem> => {
   if (!response.ok) {
     const error = await response.json();
     console.error('Failed to create OneDrive folder:', error);
+    // Provide a specific error message if the root folder itself doesn't exist.
+    if (error.error?.code === 'itemNotFound') {
+        throw new Error(`Failed to create submission folder. The specified root folder "${ROOT_FOLDER}" was not found in OneDrive. Please create it first.`);
+    }
     throw new Error(`Failed to create OneDrive folder: ${error.error?.message || response.statusText}`);
   }
 
   return response.json();
 };
 
-// Function to upload a single file to a specific folder
+// Function to upload a single file to a specific path inside the ROOT_FOLDER
 const uploadFile = async (file: FilePayload, folderName: string): Promise<DriveItem> => {
-  const endpoint = `${API_URL}/me/drive/root:/${encodeURIComponent(folderName)}/${encodeURIComponent(file.name)}:/content`;
+  const endpoint = `${API_URL}/me/drive/root:/${encodeURIComponent(ROOT_FOLDER!)}/${encodeURIComponent(folderName)}/${encodeURIComponent(file.name)}:/content`;
   const fileBuffer = Buffer.from(file.data, 'base64');
 
   const response = await fetch(endpoint, {
@@ -82,6 +90,15 @@ export const handler = async (event: { httpMethod: string; body: string }) => {
       body: JSON.stringify({ message: 'Server configuration error: The application is not connected to OneDrive.' }),
     };
   }
+  
+  // Add a check to ensure the root folder is configured. This is now mandatory.
+  if (!ROOT_FOLDER) {
+    console.error('FATAL: OneDrive root folder (ONEDRIVE_ROOT_FOLDER) is not configured in Netlify environment variables.');
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Server configuration error: The OneDrive root folder is not specified. Please set ONEDRIVE_ROOT_FOLDER in your environment variables.' }),
+    };
+  }
 
   try {
     const { folderName, files } = JSON.parse(event.body || '{}') as RequestBody;
@@ -95,7 +112,7 @@ export const handler = async (event: { httpMethod: string; body: string }) => {
         return { statusCode: 400, body: JSON.stringify({ message: 'Bad Request: Invalid folder name provided.' }) };
     }
 
-    // Create the parent folder for the submission
+    // Create the parent folder for the submission inside the specified ROOT_FOLDER
     const folder = await createFolder(sanitizedFolderName);
     if (!folder || !folder.webUrl) {
       throw new Error('Could not create or retrieve the OneDrive folder.');
@@ -112,9 +129,10 @@ export const handler = async (event: { httpMethod: string; body: string }) => {
 
   } catch (error) {
     console.error('Error during OneDrive upload process:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: error.message || 'An unknown server error occurred.' }),
+      body: JSON.stringify({ message: errorMessage }),
     };
   }
 };

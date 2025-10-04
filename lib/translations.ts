@@ -85,8 +85,8 @@ export const translations = {
     fr: 'Inscription réussie !',
   },
   successMessage: {
-    ar: 'شكرًا لك على تسجيلك. لقد أرسلنا رسالة تأكيد إلى بريدك الإلكتروني وتم رفع ملفاتك.',
-    fr: 'Merci pour votre inscription. Un e-mail de confirmation a été envoyé et vos fichiers ont été téléversés.',
+    ar: 'شكرًا لك. تم استلام تسجيلك وملفاتك بنجاح.',
+    fr: 'Merci. Votre inscription et vos fichiers ont été reçus avec succès.',
   },
   newRegistration: {
     ar: 'تسجيل جديد',

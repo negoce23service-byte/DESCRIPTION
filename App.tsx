@@ -116,13 +116,13 @@ const App: React.FC = () => {
     setSubmissionMessage(t('submitLoading'));
 
     try {
-      // Step 1: Upload files to OneDrive (if configured)
-      // This message shows even if not configured, as it's part of the submission process.
-      // The function will return quickly if no token is present.
+      // Step 1: Upload files to OneDrive. This is now a mandatory step.
+      // The function will throw an error if the OneDrive token is not configured,
+      // which will be caught by the catch block below.
       setSubmissionMessage(t('uploadingFiles'));
       const oneDriveFolderUrl = await uploadFilesToOneDrive(attachments, fullName);
 
-      // Step 2: Save registration data to local storage
+      // Step 2: Save registration data to local storage only after successful upload.
       const attachmentNames = attachments.map(file => file.name);
       
       const { attachments: _, ...rest } = formData;
@@ -141,11 +141,7 @@ const App: React.FC = () => {
       localStorage.setItem('registrations', JSON.stringify(updatedRegistrations));
       
       setStatus('success');
-      if (oneDriveFolderUrl) {
-        console.log('Form Submitted and files uploaded to OneDrive:', newRegistration);
-      } else {
-        console.log('Form Submitted. Files NOT uploaded to OneDrive (missing configuration).', newRegistration);
-      }
+      console.log('Form Submitted and files uploaded to OneDrive:', newRegistration);
 
     } catch (error) {
         console.error('Submission failed:', error);

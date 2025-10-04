@@ -69,14 +69,15 @@ const uploadFile = async (file: File, folderName: string): Promise<DriveItem> =>
 
 /**
  * Creates a folder in OneDrive and uploads an array of files to it.
+ * If OneDrive is not configured (missing access token), this function will throw an error.
  * @param files - An array of File objects to upload.
  * @param folderName - The name of the folder to create in OneDrive.
- * @returns The web URL of the created folder, or undefined if not configured.
+ * @returns The web URL of the created folder.
  */
-export const uploadFilesToOneDrive = async (files: File[], folderName: string): Promise<string | undefined> => {
+export const uploadFilesToOneDrive = async (files: File[], folderName: string): Promise<string> => {
     if (!ACCESS_TOKEN) {
-        console.warn('OneDrive integration is not configured. Missing access token. Skipping file upload.');
-        return undefined;
+        console.error('OneDrive integration is not configured. Missing access token. Submission cannot proceed.');
+        throw new Error('OneDrive Access Token is not configured. Submission cannot proceed.');
     }
 
     if (!folderName.trim()) {

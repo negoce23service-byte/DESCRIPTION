@@ -185,31 +185,6 @@ export const translations = {
     ar: 'المرفقات',
     fr: 'Pièces jointes',
   },
-  // Admin Login
-  adminLoginTitle: {
-    ar: 'الوصول إلى لوحة التحكم',
-    fr: 'Accès Administrateur',
-  },
-  passwordLabel: {
-    ar: 'كلمة المرور',
-    fr: 'Mot de passe',
-  },
-  passwordPlaceholder: {
-    ar: 'أدخل كلمة المرور',
-    fr: 'Entrez le mot de passe',
-  },
-  loginButton: {
-    ar: 'تسجيل الدخول',
-    fr: 'Se connecter',
-  },
-  loginError: {
-    ar: 'كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.',
-    fr: 'Mot de passe incorrect. Veuillez réessayer.',
-  },
-  loginBackToForm: {
-    ar: 'العودة إلى النموذج',
-    fr: 'Retour au formulaire',
-  },
   // Admin Dashboard Actions
   status: {
     ar: 'الحالة',

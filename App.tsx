@@ -6,7 +6,6 @@ import SubmitButton from './components/SubmitButton';
 import StatusMessage from './components/StatusMessage';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import AdminDashboard from './components/AdminDashboard';
-import AdminLogin from './components/AdminLogin';
 import { useLanguage } from './context/LanguageContext';
 import FileUpload from './components/FileUpload';
 import CategorySelector from './components/CategorySelector';
@@ -40,8 +39,7 @@ const fileToBase64 = (file: File): Promise<string> => {
 const App: React.FC = () => {
   const [formData, setFormData] = useState<FormData>(getInitialFormData());
   const [status, setStatus] = useState<SubmissionStatus>('idle');
-  const [view, setView] = useState<'form' | 'admin' | 'login'>('form');
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [view, setView] = useState<'form' | 'admin'>('form');
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submissionMessage, setSubmissionMessage] = useState<string | null>(null);
@@ -175,11 +173,7 @@ const App: React.FC = () => {
   }, [formData, t]);
 
   const handleAdminClick = () => {
-    if (isAdminAuthenticated) {
-      setView('admin');
-    } else {
-      setView('login');
-    }
+    setView('admin');
   };
 
   const statusMessages = {
@@ -190,49 +184,8 @@ const App: React.FC = () => {
     errorMessage: formError || t('errorMessage'),
     errorButton: t('tryAgain'),
   };
-  
-  if (view === 'login') {
-    return (
-        <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 selection:bg-amber-100">
-            <div className="max-w-3xl w-full">
-                <div className="w-full flex justify-start rtl:justify-end mb-4">
-                    <LanguageSwitcher />
-                </div>
-                <div className="bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
-                    <AdminLogin 
-                        onLoginSuccess={() => {
-                            setIsAdminAuthenticated(true);
-                            setView('admin');
-                        }} 
-                        onBack={() => setView('form')}
-                    />
-                </div>
-            </div>
-        </div>
-    );
-  }
 
   if (view === 'admin') {
-    if (!isAdminAuthenticated) {
-        return (
-             <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 selection:bg-amber-100">
-                <div className="max-w-3xl w-full">
-                     <div className="w-full flex justify-start rtl:justify-end mb-4">
-                        <LanguageSwitcher />
-                    </div>
-                    <div className="bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
-                        <AdminLogin 
-                            onLoginSuccess={() => {
-                                setIsAdminAuthenticated(true);
-                                setView('admin');
-                            }} 
-                            onBack={() => setView('form')}
-                        />
-                    </div>
-                </div>
-            </div>
-        );
-    }
     return (
         <div className="min-h-screen bg-stone-50 flex flex-col items-center p-4 pt-8 selection:bg-amber-100">
             <div className="w-full max-w-7xl">

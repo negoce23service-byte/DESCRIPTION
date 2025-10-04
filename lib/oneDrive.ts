@@ -16,9 +16,10 @@ declare const google: any;
 // 6. Copy the "Client ID" and paste it below.
 // ==========================================================================================
 
-const GOOGLE_API_KEY = "AIzaSyA_izgCTN2pbHcESUepPUTyTZMeBa0iSDI"; // <-- PASTE YOUR API KEY HERE
-const GOOGLE_CLIENT_ID = "501974657793-gnr8g3kokb5ai0rk53lb9nl1sita57kj.apps.googleusercontent.com
-"; // <-- PASTE YOUR CLIENT ID HERE
+// FIX: Explicitly type constants as `string` to avoid TypeScript inferring a literal type,
+// which causes errors when comparing against placeholder strings later in the code.
+const GOOGLE_API_KEY: string = "AIzaSyA_izgCTN2pbHcESUepPUTyTZMeBa0iSDI"; // <-- PASTE YOUR API KEY HERE
+const GOOGLE_CLIENT_ID: string = "501974657793-gnr8g3kokb5ai0rk53lb9nl1sita57kj.apps.googleusercontent.com"; // <-- PASTE YOUR CLIENT ID HERE
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 let tokenClient: any;

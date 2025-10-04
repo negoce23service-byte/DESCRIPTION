@@ -11,7 +11,6 @@ import { useLanguage } from './context/LanguageContext';
 import FileUpload from './components/FileUpload';
 import CategorySelector from './components/CategorySelector';
 import { UserIcon, MailIcon, IdCardIcon, PhoneIcon, NewspaperIcon, DesktopIcon, MicrophoneIcon, TvIcon } from './components/Icons';
-import { uploadFilesToOneDrive } from './lib/oneDrive';
 
 
 const getInitialFormData = (): FormData => ({
@@ -22,6 +21,21 @@ const getInitialFormData = (): FormData => ({
   category: 'participant',
   attachments: [],
 });
+
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const result = reader.result as string;
+      // remove the "data:*/*;base64," part
+      const base64 = result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = error => reject(error);
+  });
+};
+
 
 const App: React.FC = () => {
   const [formData, setFormData] = useState<FormData>(getInitialFormData());
@@ -116,11 +130,35 @@ const App: React.FC = () => {
     setSubmissionMessage(t('submitLoading'));
 
     try {
-      // Step 1: Upload files to OneDrive. This is now a mandatory step.
-      // The function will throw an error if the OneDrive token is not configured,
-      // which will be caught by the catch block below.
+      // Step 1: Upload files via our secure Netlify function
       setSubmissionMessage(t('uploadingFiles'));
-      const oneDriveFolderUrl = await uploadFilesToOneDrive(attachments, fullName);
+      
+      const filesPayload = await Promise.all(
+        attachments.map(async (file) => ({
+          name: file.name,
+          type: file.type,
+          data: await fileToBase64(file),
+        }))
+      );
+      
+      const response = await fetch('/.netlify/functions/uploadToOneDrive', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          folderName: fullName,
+          files: filesPayload,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to upload files. Please check the server logs.' }));
+        throw new Error(errorData.message || 'An unknown error occurred during file upload.');
+      }
+
+      const { oneDriveFolderUrl } = await response.json();
+
 
       // Step 2: Save registration data to local storage only after successful upload.
       const attachmentNames = attachments.map(file => file.name);

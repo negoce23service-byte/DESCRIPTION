@@ -69,19 +69,12 @@ const DownloadIcon = () => (
     </svg>
 );
 
-const SearchIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-    </svg>
-);
-
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const { t, language } = useLanguage();
   const [editingRegistration, setEditingRegistration] = useState<Registration | null>(null);
   const [deletingRegistrationId, setDeletingRegistrationId] = useState<string | null>(null);
-  const [filter, setFilter] = useState('');
 
   
   type SortableKeys = 'submissionDate' | 'fullName' | 'email' | 'nationalId' | 'category' | 'status';
@@ -137,19 +130,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
   }, [t]);
 
   const processedRegistrations = useMemo(() => {
-    const filteredItems = registrations.filter(reg => {
-        if (!filter) return true;
-        const lowercasedFilter = filter.toLowerCase().trim();
-        if (!lowercasedFilter) return true;
-        
-        return (
-            reg.fullName.toLowerCase().includes(lowercasedFilter) ||
-            reg.email.toLowerCase().includes(lowercasedFilter) ||
-            getCategoryTranslation(reg.category).toLowerCase().includes(lowercasedFilter)
-        );
-    });
-        
-    const sortableItems = [...filteredItems];
+    const sortableItems = [...registrations];
     if (sortConfig) {
       sortableItems.sort((a, b) => {
         const key = sortConfig.key;
@@ -181,7 +162,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
       });
     }
     return sortableItems;
-  }, [registrations, filter, sortConfig, getCategoryTranslation, getStatusTranslation]);
+  }, [registrations, sortConfig, getCategoryTranslation, getStatusTranslation]);
 
   const requestSort = (key: SortableKeys) => {
     let direction: SortDirection = 'ascending';
@@ -287,19 +268,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     <>
       <div className="space-y-4 my-6">
         <h1 className="text-2xl font-bold text-stone-800">{t('adminDashboardTitle')}</h1>
-        <div className="flex justify-between items-center flex-wrap gap-4">
-            <div className="relative flex-grow max-w-sm">
-                 <div className="pointer-events-none absolute inset-y-0 ltr:left-0 rtl:right-0 flex items-center ltr:pl-3 rtl:pr-3">
-                    <SearchIcon />
-                </div>
-                <input
-                    type="search"
-                    placeholder={t('adminSearchPlaceholder')}
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    className="block w-full rounded-md border border-stone-300 bg-white py-2 ltr:pl-10 rtl:pr-10 text-stone-900 placeholder-stone-400 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
-                />
-            </div>
+        <div className="flex justify-end items-center flex-wrap gap-4">
             <div className="flex items-center space-x-2 rtl:space-x-reverse flex-shrink-0">
                  <button
                     onClick={handleDownloadExcel}
@@ -321,8 +290,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
 
       {registrations.length === 0 ? (
         <p className="text-center text-stone-500 py-10">{t('adminNoRegistrations')}</p>
-      ) : processedRegistrations.length === 0 ? (
-        <p className="text-center text-stone-500 py-10">{t('adminNoFilterResults')}</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-stone-200 shadow-sm">
           <table className="min-w-full divide-y divide-stone-200 bg-white text-sm">

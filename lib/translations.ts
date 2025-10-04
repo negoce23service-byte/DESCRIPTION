@@ -153,14 +153,6 @@ export const translations = {
     ar: 'لا توجد تسجيلات حتى الآن.',
     fr: "Aucune inscription pour le moment.",
   },
-  adminNoFilterResults: {
-    ar: 'لم يتم العثور على نتائج تطابق بحثك.',
-    fr: 'Aucun résultat ne correspond à votre recherche.'
-  },
-  adminSearchPlaceholder: {
-    ar: 'ابحث بالاسم, البريد الإلكتروني, أو الفئة...',
-    fr: 'Rechercher par nom, e-mail, ou catégorie...'
-  },
   adminBackToForm: {
     ar: 'العودة إلى نموذج التسجيل',
     fr: "Retour au formulaire d'inscription",
